@@ -1,0 +1,44 @@
+﻿@startuml
+title Factory Method Pattern (LSP + DIP)
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+'========================
+' PRODUCT (abstraction)
+'========================
+abstract class Payment {
+  {abstract} + Pay(amount : decimal) : void
+}
+
+'========================
+' CONCRETE PRODUCT
+'========================
+class CardPayment {
+  + Pay(amount : decimal) : void
+}
+
+'========================
+' CREATOR (interface)
+'========================
+interface IPaymentFactory {
+  + CreatePayment() : Payment
+}
+
+'========================
+' CONCRETE FACTORY
+'========================
+class CardPaymentFactory {
+  + CreatePayment() : Payment
+}
+
+'========================
+' RELATIONSHIPS
+'========================
+Payment <|-- CardPayment
+IPaymentFactory <|.. CardPaymentFactory
+
+IPaymentFactory ..> Payment : creates
+CardPaymentFactory ..> CardPayment : creates
+
+@enduml

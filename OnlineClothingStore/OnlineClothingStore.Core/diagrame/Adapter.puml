@@ -1,0 +1,39 @@
+﻿@startuml
+interface IExternalPaymentGateway {
+  +Pay(customerEmail: string, amount: decimal, currency: string): bool
+  +Refund(transactionId: string, amount: decimal, currency: string): bool
+}
+
+class ExternalPaymentService {
+  -_gateway: IExternalPaymentGateway
+  +Checkout(email: string, total: decimal): bool
+}
+
+class StripeApi {
+  +CreateCharge(email: string, amountInCents: long, currency: string): string
+  +CreateRefund(chargeId: string, amountInCents: long): bool
+}
+
+class PayPalApi {
+  +SendPayment(total: decimal, currencyCode: string, payerEmail: string): bool
+  +SendRefund(paymentId: string, total: decimal): bool
+}
+
+class StripePaymentAdapter {
+  -_stripeApi: StripeApi
+  +Pay(customerEmail: string, amount: decimal, currency: string): bool
+  +Refund(transactionId: string, amount: decimal, currency: string): bool
+}
+
+class PayPalPaymentAdapter {
+  -_payPalApi: PayPalApi
+  +Pay(customerEmail: string, amount: decimal, currency: string): bool
+  +Refund(transactionId: string, amount: decimal, currency: string): bool
+}
+
+IExternalPaymentGateway <|.. StripePaymentAdapter
+IExternalPaymentGateway <|.. PayPalPaymentAdapter
+ExternalPaymentService --> IExternalPaymentGateway
+StripePaymentAdapter --> StripeApi
+PayPalPaymentAdapter --> PayPalApi
+@enduml

@@ -1,0 +1,14 @@
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.App\bin\Debug\net8.0\OnlineClothingStore.App.exe
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.App\bin\Debug\net8.0\OnlineClothingStore.App.deps.json
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.App\bin\Debug\net8.0\OnlineClothingStore.App.runtimeconfig.json
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.App\bin\Debug\net8.0\OnlineClothingStore.App.dll
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.App\bin\Debug\net8.0\OnlineClothingStore.App.pdb
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.App\obj\Debug\net8.0\OnlineClothingStore.App.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.App\obj\Debug\net8.0\OnlineClothingStore.App.AssemblyInfoInputs.cache
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.App\obj\Debug\net8.0\OnlineClothingStore.App.AssemblyInfo.cs
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.App\obj\Debug\net8.0\OnlineClothingStore.App.csproj.CoreCompileInputs.cache
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.App\obj\Debug\net8.0\OnlineClothingStore.App.dll
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.App\obj\Debug\net8.0\refint\OnlineClothingStore.App.dll
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.App\obj\Debug\net8.0\OnlineClothingStore.App.pdb
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.App\obj\Debug\net8.0\OnlineClothingStore.App.genruntimeconfig.cache
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.App\obj\Debug\net8.0\ref\OnlineClothingStore.App.dll

@@ -1,0 +1,44 @@
+﻿@startuml
+skinparam classAttributeIconSize 0
+left to right direction
+
+interface IComponent {
+  +Operation(): string
+}
+
+class ConcreteComponent {
+  +Operation(): string
+}
+
+abstract class Decorator {
+  #_inner: IComponent
+  +Decorator(component: IComponent)
+  +Operation(): string
+}
+
+class LoggingDecorator {
+  +Operation(): string
+}
+
+class ValidationDecorator {
+  +Operation(): string
+  }
+  
+  class RetryDecorator {
+    +Operation(): string
+  }
+  
+  class Client {
+    +Execute(component: IComponent): void
+  }
+  
+  IComponent <|.. ConcreteComponent
+  IComponent <|.. Decorator
+  
+  Decorator <|-- LoggingDecorator
+  Decorator <|-- ValidationDecorator
+  Decorator <|-- RetryDecorator
+  
+  Decorator --> IComponent
+  Client --> IComponent
+  @enduml
