@@ -1,0 +1,29 @@
+﻿@startuml
+skinparam classAttributeIconSize 0
+left to right direction
+interface IFlyweight {
+  +Operation(extrinsicState: string): void
+}
+
+class ConcreteFlyweight {
+  -intrinsicState: string
+  +Operation(extrinsicState: string): void
+}
+
+class FlyweightFactory {
+  -_cache: Dictionary<string, IFlyweight>
+  +GetFlyweight(key: string): IFlyweight
+  +CacheSize: int
+}
+
+class Client {
+  -_factory: FlyweightFactory
+  +UseFlyweight(key: string, extrinsicState: string): void
+}
+IFlyweight <|.. ConcreteFlyweight
+FlyweightFactory --> IFlyweight
+Client --> FlyweightFactory
+Client --> IFlyweight
+
+@enduml
+

@@ -1,0 +1,54 @@
+﻿@startuml
+title Prototype Pattern - Online Clothing Store (LSP Correct)
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam shadowing false
+
+package "Domain" {
+  abstract class Product {
+    - Name : string
+    - Price : decimal
+    + GetFinalPrice() : decimal
+  }
+
+  class ClothingProduct {
+    + Size : string
+    + Color : string
+    + Material : string
+    + HasCustomPrint : bool
+    + CustomPrintText : string
+    + PremiumPackaging : bool
+    + Tags : List<string>
+    + GetFinalPrice() : decimal
+    + ToString() : string
+  }
+
+  Product <|-- ClothingProduct
+}
+
+package "Prototype" {
+  interface "IPrototype<T>" as IPrototype {
+    + ShallowClone() : T
+    + DeepClone() : T
+  }
+
+  class ClothingProductPrototype {
+    - _product : ClothingProduct
+    + ClothingProductPrototype(product : ClothingProduct)
+    + ShallowClone() : ClothingProduct
+    + DeepClone() : ClothingProduct
+  }
+
+  class ProductTemplateRegistry {
+    - _templates : Dictionary<string, IPrototype<ClothingProduct>>
+    + Register(key : string, prototype : IPrototype<ClothingProduct>) : void
+    + GetShallowClone(key : string) : ClothingProduct
+    + GetDeepClone(key : string) : ClothingProduct
+  }
+
+  IPrototype <|.. ClothingProductPrototype
+  ClothingProductPrototype --> ClothingProduct : clones
+  ProductTemplateRegistry --> IPrototype : depends on
+}
+@enduml
