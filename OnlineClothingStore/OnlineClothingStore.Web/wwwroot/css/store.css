@@ -726,6 +726,27 @@ main {
     color: #991b1b;
 }
 
+.admin-observer-section {
+    margin: 35px 55px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.single-observer-layout {
+    grid-template-columns: minmax(0, 720px);
+    justify-content: center;
+}
+
+.observer-success-note {
+    margin-top: 20px;
+    padding: 14px 16px;
+    border-radius: 16px;
+    background: #eff6ff;
+    color: #1e3a8a;
+    font-weight: 800;
+}
+
 /* ============================= */
 /* STYLE EDITOR */
 /* ============================= */
@@ -1106,6 +1127,7 @@ footer {
     .product-details,
     .checkout-layout,
     .admin-panel,
+    .admin-observer-section,
     .pattern-dashboard {
         grid-template-columns: 1fr;
     }
@@ -1130,6 +1152,7 @@ footer {
     .cart-summary,
     .checkout-products,
     .admin-stock-section,
+    .admin-observer-section,
     .style-editor-grid,
     .empty-state,
     .admin-panel,
@@ -1808,4 +1831,171 @@ footer {
 
 .checkout-summary-row strong {
     color: #0b3d70;
+}
+.observer-page {
+    padding: 30px 40px 50px;
+    background: linear-gradient(135deg, #eaf4ff, #ffffff);
+    min-height: 100vh;
+}
+
+.observer-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    margin-bottom: 28px;
+}
+
+.observer-card {
+    background: #ffffff;
+    border-radius: 28px;
+    padding: 30px;
+    box-shadow: 0 15px 40px rgba(0, 75, 140, 0.10);
+}
+
+.observer-card h2 {
+    color: #0b3d70;
+    margin-bottom: 16px;
+}
+
+.observer-info {
+    color: #49647d;
+    line-height: 1.6;
+    margin-bottom: 22px;
+    background: #f1f8ff;
+    padding: 15px 18px;
+    border-radius: 16px;
+}
+
+.observer-form select,
+.observer-form input {
+    border: 1px solid #cfe3f5;
+    border-radius: 14px;
+    padding: 13px 15px;
+    font-size: 15px;
+    outline: none;
+    background: #f8fbff;
+}
+
+.observer-btn {
+    width: 100%;
+    border: none;
+    border-radius: 18px;
+    padding: 15px;
+    background: linear-gradient(135deg, #0b74d1, #42a5f5);
+    color: white;
+    font-size: 17px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.25s;
+    margin-top: 10px;
+}
+
+.observer-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(0, 105, 190, 0.25);
+}
+
+.observer-list {
+    display: grid;
+    gap: 12px;
+}
+
+.observer-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    align-items: center;
+    background: #f8fbff;
+    border: 1px solid #cfe3f5;
+    border-radius: 16px;
+    padding: 15px;
+}
+
+.observer-item div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.observer-item strong {
+    color: #0b3d70;
+}
+
+.observer-item span,
+.observer-item small {
+    color: #49647d;
+}
+
+.observer-remove-btn {
+    border: none;
+    border-radius: 14px;
+    padding: 10px 14px;
+    background: #fff1f1;
+    color: #b42318;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.observer-notifications-card {
+    margin-top: 0;
+}
+
+.observer-title-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    align-items: center;
+}
+
+.observer-clear-btn {
+    text-decoration: none;
+    background: #eaf4ff;
+    color: #0b65b1;
+    border-radius: 14px;
+    padding: 10px 14px;
+    font-weight: 800;
+}
+
+.observer-notifications {
+    display: grid;
+    gap: 12px;
+}
+
+.observer-notification {
+    background: linear-gradient(135deg, #f7fbff, #eaf4ff);
+    border: 1px solid #cfe3f5;
+    border-radius: 16px;
+    padding: 16px;
+}
+
+.observer-notification strong {
+    display: block;
+    color: #0b3d70;
+    margin-bottom: 4px;
+}
+
+.observer-notification span {
+    display: block;
+    color: #49647d;
+    margin-bottom: 8px;
+}
+
+.observer-notification p {
+    color: #244b6e;
+    line-height: 1.5;
+}
+
+@media (max-width: 1000px) {
+    .observer-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .observer-page {
+        padding: 20px;
+    }
+
+    .observer-title-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }

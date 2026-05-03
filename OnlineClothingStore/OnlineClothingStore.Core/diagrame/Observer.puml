@@ -1,48 +1,84 @@
 ﻿@startuml
-title Observer Pattern - Order Notification System
+skinparam classAttributeIconSize 0
+skinparam shadowing false
 
-class OrderEvent {
-    +OrderId: string
-    +CustomerEmail: string
-    +TotalAmount: decimal
-    +CreatedAt: DateTime
+skinparam class {
+    BackgroundColor #F8FBFF
+    BorderColor #1F5F99
+    ArrowColor #1F5F99
 }
 
-interface IOrderObserver {
-    +Update(orderEvent: OrderEvent): void
+title Observer Pattern - BlueWear Stock Alert System
+
+class StockChangedEvent {
+    + ProductId : int
+    + ProductName : string
+    + OldStock : int
+    + NewStock : int
+    + StockChangedEvent(productId : int, productName : string, oldStock : int, newStock : int)
 }
 
-class OrderSubject {
-    -observers: List<IOrderObserver>
-    +Subscribe(observer: IOrderObserver): void
-    +Unsubscribe(observer: IOrderObserver): void
-    +Notify(orderEvent: OrderEvent): void
-    +PlaceOrder(customerEmail: string, totalAmount: decimal): OrderEvent
+class StockNotification {
+    + CustomerName : string
+    + Email : string
+    + ProductName : string
+    + Message : string
+    + StockNotification(customerName : string, email : string, productName : string, message : string)
 }
 
-class CustomerNotificationObserver {
-    +Update(orderEvent: OrderEvent): void
+interface IStockObserver {
+    + ProductId : int
+    + CustomerName : string
+    + Email : string
+    + Update(stockEvent : StockChangedEvent) : StockNotification
 }
 
-class StockUpdateObserver {
-    +Update(orderEvent: OrderEvent): void
+class CustomerStockObserver {
+    + ProductId : int
+    + CustomerName : string
+    + Email : string
+    + CustomerStockObserver(productId : int, customerName : string, email : string)
+    + Update(stockEvent : StockChangedEvent) : StockNotification
 }
 
-class AdminNotificationObserver {
-    +Update(orderEvent: OrderEvent): void
+interface IStockSubject {
+    + Attach(observer : IStockObserver) : void
+    + Detach(email : string, productId : int) : void
+    + Notify(stockEvent : StockChangedEvent) : List<StockNotification>
+    + GetObservers() : List<IStockObserver>
 }
 
-class AuditLogObserver {
-    +Update(orderEvent: OrderEvent): void
+class ProductStockSubject {
+    - observers : List<IStockObserver>
+    + Attach(observer : IStockObserver) : void
+    + Detach(email : string, productId : int) : void
+    + Notify(stockEvent : StockChangedEvent) : List<StockNotification>
+    + GetObservers() : List<IStockObserver>
 }
 
-IOrderObserver <|.. CustomerNotificationObserver
-IOrderObserver <|.. StockUpdateObserver
-IOrderObserver <|.. AdminNotificationObserver
-IOrderObserver <|.. AuditLogObserver
+class StoreController {
+    - StockSubject : ProductStockSubject
+    - StockNotifications : List<StockNotification>
+    + StockAlerts() : IActionResult
+    + SubscribeStockAlert(productId : int, customerName : string, email : string) : IActionResult
+    + UnsubscribeStockAlert(productId : int, email : string) : IActionResult
+    + ClearStockNotifications() : IActionResult
+    + UpdateProductStock(id : int, stockQuantity : int) : IActionResult
+}
 
-OrderSubject --> IOrderObserver
-OrderSubject --> OrderEvent
-IOrderObserver --> OrderEvent
+IStockObserver <|.. CustomerStockObserver
+IStockSubject <|.. ProductStockSubject
+
+ProductStockSubject o-- IStockObserver : stores observers
+ProductStockSubject ..> StockChangedEvent : receives event
+ProductStockSubject ..> StockNotification : creates notifications
+
+CustomerStockObserver ..> StockChangedEvent : reads event
+CustomerStockObserver ..> StockNotification : returns notification
+
+StoreController ..> IStockSubject : uses subject
+StoreController ..> CustomerStockObserver : creates observer
+StoreController ..> StockChangedEvent : creates event
+StoreController o-- StockNotification : stores generated notifications
 
 @enduml

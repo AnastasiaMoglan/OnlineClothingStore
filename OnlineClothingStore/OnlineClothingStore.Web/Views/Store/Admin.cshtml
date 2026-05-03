@@ -1,18 +1,21 @@
-﻿@{
+@using OnlineClothingStore.App.Structural.Observer
+
+@{
     ViewData["Title"] = "Admin";
     Layout = "~/Views/Shared/_Layout.cshtml";
 
     var categoryStyles = ViewBag.CategoryStyles;
     var products = ViewBag.Products;
+    List<IStockObserver> observers = ViewBag.Observers as List<IStockObserver> ?? new List<IStockObserver>();
+    List<StockNotification> notifications = ViewBag.StockNotifications as List<StockNotification> ?? new List<StockNotification>();
 }
 
 <section class="shop-hero">
     <div>
         <span class="hero-kicker">Admin Panel</span>
-        <h1>Administrare stiluri categorii</h1>
+        <h1>Administrare magazin</h1>
         <p>
-            Aici modifici stilul partajat al unei categorii. Toate produsele din categoria respectiva
-            vor folosi acelasi obiect Flyweight actualizat.
+            Aici adminul gestioneaza stilurile, stocurile si abonarea clientilor la modificarile de stoc.
         </p>
     </div>
 
@@ -49,7 +52,7 @@
         <div>
             <span class="section-kicker">Stocuri</span>
             <h2>Administrare stoc produse</h2>
-            <p>Stocurile sunt vizibile și modificabile doar din Admin.</p>
+            <p>Stocurile sunt vizibile si modificabile doar din Admin.</p>
         </div>
     </div>
 
@@ -59,10 +62,10 @@
                 <tr>
                     <th>Produs</th>
                     <th>Categorie</th>
-                    <th>Mărime</th>
-                    <th>Preț</th>
+                    <th>Marime</th>
+                    <th>Pret</th>
                     <th>Stoc</th>
-                    <th>Acțiune</th>
+                    <th>Actiune</th>
                 </tr>
             </thead>
 
@@ -87,7 +90,7 @@
                                        name="stockQuantity"
                                        min="0"
                                        value="@product.StockQuantity" />
-                                <button type="submit">Salvează</button>
+                                <button type="submit">Salveaza</button>
                             </form>
                         </td>
                         <td>
@@ -108,6 +111,66 @@
                 }
             </tbody>
         </table>
+    </div>
+</section>
+
+<section class="admin-observer-section">
+    <div class="observer-card">
+        <h2>Abonari active</h2>
+        <p class="observer-info">Aceste abonari sunt vizibile doar pentru Admin.</p>
+
+        @if (observers.Count == 0)
+        {
+            <p class="empty-result">Nu exista inca abonati la modificarile de stoc.</p>
+        }
+        else
+        {
+            <div class="observer-list">
+                @foreach (IStockObserver observer in observers)
+                {
+                    <div class="observer-item">
+                        <div>
+                            <strong>@observer.CustomerName</strong>
+                            <span>@observer.Email</span>
+                            <small>ID produs urmarit: @observer.ProductId</small>
+                        </div>
+
+                        <form asp-controller="Store" asp-action="UnsubscribeStockAlert" method="post">
+                            <input type="hidden" name="productId" value="@observer.ProductId" />
+                            <input type="hidden" name="email" value="@observer.Email" />
+                            <button type="submit" class="observer-remove-btn">Dezaboneaza</button>
+                        </form>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <div class="observer-card">
+        <div class="observer-title-row">
+            <h2>Notificari generate</h2>
+            <a asp-controller="Store" asp-action="ClearStockNotifications" class="observer-clear-btn">
+                Sterge notificarile
+            </a>
+        </div>
+
+        @if (notifications.Count == 0)
+        {
+            <p class="empty-result">Nu exista notificari generate.</p>
+        }
+        else
+        {
+            <div class="observer-notifications">
+                @foreach (StockNotification notification in notifications)
+                {
+                    <div class="observer-notification">
+                        <strong>@notification.CustomerName</strong>
+                        <span>@notification.Email</span>
+                        <p>@notification.Message</p>
+                    </div>
+                }
+            </div>
+        }
     </div>
 </section>
 

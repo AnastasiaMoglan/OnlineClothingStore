@@ -1,0 +1,48 @@
+@{
+    ViewData["Title"] = "Abonări stoc";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var products = ViewBag.Products;
+}
+
+<section class="observer-page">
+    <div class="observer-layout single-observer-layout">
+        <div class="observer-card">
+            <h2>Abonare la modificări de stoc</h2>
+
+            <p class="observer-info">
+                Alege produsul pentru care vrei să primești notificare când stocul se modifică.
+            </p>
+
+            <form asp-controller="Store" asp-action="SubscribeStockAlert" method="post" class="observer-form">
+                <div class="form-group">
+                    <label>Produs urmărit</label>
+                    <select name="productId">
+                        @foreach (var product in products)
+                        {
+                            <option value="@product.Id">@product.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Nume</label>
+                    <input type="text" name="customerName" placeholder="Numele tău" />
+                </div>
+
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="email" placeholder="email@example.com" />
+                </div>
+
+                <button type="submit" class="observer-btn">
+                    Abonează-te
+                </button>
+            </form>
+
+            <p class="observer-success-note">
+                Abonarea este salvată, iar administratorul o va vedea în panoul Admin.
+            </p>
+        </div>
+    </div>
+</section>

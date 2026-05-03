@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using OnlineClothingStore.App.Structural.Bridge;
 using OnlineClothingStore.App.Structural.Decorator;
 using OnlineClothingStore.App.Structural.Flyweight;
+using OnlineClothingStore.App.Structural.Observer;
 using OnlineClothingStore.App.Structural.Proxy;
 using OnlineClothingStore.App.Structural.Strategy;
 using OnlineClothingStore.Web.Models;
@@ -32,6 +33,10 @@ public class StoreController : Controller
     private static readonly List<StoreProduct> WishlistItems = new();
 
     private static readonly ProductCardStyleFactory StyleFactory = new();
+
+    private static readonly ProductStockSubject StockSubject = new();
+
+    private static readonly List<StockNotification> StockNotifications = new();
 
     public IActionResult Index()
     {
@@ -137,6 +142,8 @@ public class StoreController : Controller
         ViewBag.Role = role;
         ViewBag.CategoryStyles = GetCategoryStyles();
         ViewBag.Products = Products;
+        ViewBag.Observers = StockSubject.GetObservers();
+        ViewBag.StockNotifications = StockNotifications;
         ViewBag.FlyweightAdminInfo =
             "Adminul modifica un singur stil partajat pentru o categorie. Toate produsele din acea categorie vor folosi noul stil.";
 
@@ -179,7 +186,27 @@ public class StoreController : Controller
 
         if (product != null)
         {
-            product.StockQuantity = stockQuantity < 0 ? 0 : stockQuantity;
+            int oldStock = product.StockQuantity;
+            int newStock = stockQuantity < 0 ? 0 : stockQuantity;
+
+            product.StockQuantity = newStock;
+
+            if (oldStock != newStock)
+            {
+                StockChangedEvent stockEvent = new(
+                    product.Id,
+                    product.Name,
+                    oldStock,
+                    newStock
+                );
+
+                List<StockNotification> notifications = StockSubject.Notify(stockEvent);
+
+                if (notifications.Count > 0)
+                {
+                    StockNotifications.AddRange(notifications);
+                }
+            }
         }
 
         return RedirectToAction(nameof(Admin));
@@ -743,9 +770,80 @@ public class StoreController : Controller
     }
 
     // ============================================================
+    // OBSERVER PATTERN
+    // Functionalitate adaugata fara a modifica Flyweight,
+    // Decorator, Bridge, Proxy sau Strategy.
+    // Demonstreaza abonarea clientilor la modificarile de stoc.
+    // ============================================================
+
+    public IActionResult StockAlerts()
+    {
+        ViewBag.Products = Products;
+
+        ViewBag.ObserverInfo =
+            "Observer permite clientilor sa se aboneze la modificarile de stoc. Cand managerul modifica stocul in Admin, abonatii produsului sunt notificati automat.";
+
+        AddLayoutCounters();
+
+        return View();
+    }
+
+    [HttpPost]
+    public IActionResult SubscribeStockAlert(
+        int productId,
+        string customerName,
+        string email)
+    {
+        StoreProduct? product = Products.FirstOrDefault(p => p.Id == productId);
+
+        if (product == null)
+        {
+            return RedirectToAction(nameof(StockAlerts));
+        }
+
+        customerName = string.IsNullOrWhiteSpace(customerName)
+            ? "Client BlueWear"
+            : customerName;
+
+        email = string.IsNullOrWhiteSpace(email)
+            ? "client@bluewear.com"
+            : email;
+
+        CustomerStockObserver observer = new(
+            product.Id,
+            customerName,
+            email
+        );
+
+        StockSubject.Attach(observer);
+
+        return RedirectToAction(nameof(StockAlerts));
+    }
+
+    [HttpPost]
+    public IActionResult UnsubscribeStockAlert(
+        int productId,
+        string email)
+    {
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            StockSubject.Detach(email, productId);
+        }
+
+        return RedirectToAction(nameof(Admin));
+    }
+
+    public IActionResult ClearStockNotifications()
+    {
+        StockNotifications.Clear();
+
+        return RedirectToAction(nameof(Admin));
+    }
+
+    // ============================================================
     // PROXY PATTERN
     // Functionalitate adaugata fara a modifica Flyweight,
-    // Decorator, Bridge sau Strategy.
+    // Decorator, Bridge, Strategy sau Observer.
     // Demonstreaza controlul accesului la raportul de stocuri.
     // ============================================================
 
@@ -795,8 +893,8 @@ public class StoreController : Controller
             {
                 Category = style.Category,
                 BadgeColor = style.BadgeColor,
-                TextColor = style.TextColor,
                 FontFamily = style.FontFamily,
+                TextColor = style.TextColor,
                 BackgroundColor = style.BackgroundColor
             });
         }
