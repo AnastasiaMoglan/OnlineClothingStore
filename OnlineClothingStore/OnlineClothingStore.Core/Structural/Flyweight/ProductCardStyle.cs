@@ -1,23 +1,40 @@
 ﻿namespace OnlineClothingStore.App.Structural.Flyweight;
 
-public sealed class ProductCardStyle
+public class ProductCardStyle
 {
     public string Category { get; }
-    public string BadgeColor { get; }
-    public string FontColor { get; }
-    public string FontFamily { get; }
 
-    public ProductCardStyle(string category, string badgeColor, string fontColor, string fontFamily)
+    public string BadgeColor { get; private set; }
+
+    public string TextColor { get; private set; }
+
+    public string FontFamily { get; private set; }
+
+    public string BackgroundColor { get; private set; }
+
+    public ProductCardStyle(
+        string category,
+        string badgeColor,
+        string textColor,
+        string fontFamily,
+        string backgroundColor)
     {
         Category = category;
         BadgeColor = badgeColor;
-        FontColor = fontColor;
+        TextColor = textColor;
         FontFamily = fontFamily;
+        BackgroundColor = backgroundColor;
     }
 
-    public string Render(ProductCardContext context)
+    public void UpdateStyle(
+        string badgeColor,
+        string textColor,
+        string fontFamily,
+        string backgroundColor)
     {
-        return $"[{Category}] {context.ProductName} | {context.Size} | {context.CollectionName} | " +
-               $"{context.Price:0.00} MDL | badge={BadgeColor} | font={FontFamily}/{FontColor}";
+        BadgeColor = badgeColor;
+        TextColor = textColor;
+        FontFamily = fontFamily;
+        BackgroundColor = backgroundColor;
     }
 }

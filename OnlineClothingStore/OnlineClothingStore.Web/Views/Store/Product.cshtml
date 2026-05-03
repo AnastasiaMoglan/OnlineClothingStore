@@ -1,24 +1,39 @@
 ﻿@{
     ViewData["Title"] = "Detalii produs";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
     var product = ViewBag.Product;
 }
 
-<section class="product-details">
+<section class="product-details"
+         style="background:@product.BackgroundColor; font-family:@product.FontFamily">
+
     <div class="big-product-img">
-        @product.Category
+        <span>@product.Category</span>
     </div>
 
     <div class="details-info">
-        <span class="tag">@product.Category</span>
+        <span class="category-label"
+              style="background:@product.BadgeColor; color:@product.TextColor">
+            @product.Category
+        </span>
+
         <h1>@product.Name</h1>
 
         <p>Culoare: <b>@product.Color</b></p>
-        <p>Mărime disponibilă: <b>@product.Size</b></p>
+        <p>Marime disponibila: <b>@product.Size</b></p>
 
         <h2>@product.Price MDL</h2>
 
-        <a href="/Store/AddToCart/@product.Id" class="btn primary">Adaugă în coș</a>
-        <a href="/Store/Catalog" class="btn secondary">Înapoi la catalog</a>
+        <div class="flyweight-id product-flyweight">
+            <span>Acest produs foloseste stilul partajat</span>
+            <b>SharedStyleId: @product.SharedStyleId</b>
+        </div>
+
+        <div class="details-actions">
+            <a href="/Store/AddToCart/@product.Id" class="btn primary">Adauga in cos</a>
+            <a href="/Store/AddToWishlist/@product.Id" class="btn secondary">Adauga la wishlist</a>
+            <a href="/Store/Catalog" class="btn secondary">Inapoi la catalog</a>
+        </div>
     </div>
 </section>

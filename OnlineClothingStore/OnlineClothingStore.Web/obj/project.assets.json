@@ -10,10 +10,7 @@
         },
         "runtime": {
           "bin/placeholder/OnlineClothingStore.Core.dll": {}
-        },
-        "frameworkReferences": [
-          "Microsoft.AspNetCore.App"
-        ]
+        }
       }
     }
   },

@@ -1,44 +1,63 @@
 ﻿@{
     ViewData["Title"] = "Catalog";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    var products = ViewBag.Products;
+
+    var products = ViewBag.ProductCards;
     var categories = ViewBag.Categories;
+    string selectedCategory = ViewBag.SelectedCategory;
 }
 
-<section class="page-header">
-    <h1>Catalog produse</h1>
-    <p>Alege hainele preferate și adaugă-le în coș.</p>
+<section class="catalog-header-clean">
+    <div>
+        <span class="hero-kicker">BlueWear Store</span>
+        <h1>Catalog haine</h1>
+        <p>Alege produsele preferate și adaugă-le în coș sau wishlist.</p>
+    </div>
 </section>
 
-<section class="filters">
-    <a href="/Store/Catalog">Toate</a>
+<section class="filters catalog-filters-clean">
+    <a class="filter-link @(selectedCategory == "Toate" ? "active" : "")" href="/Store/Catalog">
+        Toate
+    </a>
 
     @foreach (var category in categories)
     {
-        <a href="/Store/Catalog?category=@category">@category</a>
+        <a class="filter-link @(selectedCategory == category ? "active" : "")"
+           href="/Store/Catalog?category=@category">
+            @category
+        </a>
     }
 </section>
 
 <section class="product-grid">
     @foreach (var product in products)
     {
-        <div class="product-card">
-            <div class="product-img">@product.Category</div>
+        <article class="product-card flyweight-card"
+                 style="background:@product.BackgroundColor; font-family:@product.FontFamily">
 
-            <h3>@product.Name</h3>
-            <p>Culoare: @product.Color</p>
-            <p>Mărime: @product.Size</p>
-            <strong>@product.Price MDL</strong>
-
-            <div class="card-actions">
-                <a href="/Store/Product/@product.Id">Detalii</a>
-                <a href="/Store/AddToCart/@product.Id">Adaugă în coș</a>
+            <div class="product-img">
+                <span class="image-fallback">@product.Category</span>
             </div>
-        </div>
+
+            <div class="product-content">
+                <span class="category-label"
+                      style="background:@product.BadgeColor; color:@product.TextColor">
+                    @product.Category
+                </span>
+
+                <h3>@product.Name</h3>
+
+                <p>Culoare: <b>@product.Color</b></p>
+                <p>Mărime: <b>@product.Size</b></p>
+
+                <strong class="price">@product.Price MDL</strong>
+
+                <div class="card-actions">
+                    <a href="/Store/Product/@product.Id">Detalii</a>
+                    <a href="/Store/AddToWishlist/@product.Id" class="light-action">Wishlist</a>
+                    <a href="/Store/AddToCart/@product.Id">Adaugă în coș</a>
+                </div>
+            </div>
+        </article>
     }
 </section>
-
-<div class="pattern-box">
-    <b>Optimizare catalog:</b>
-    <p>@ViewBag.FlyweightInfo</p>
-</div>

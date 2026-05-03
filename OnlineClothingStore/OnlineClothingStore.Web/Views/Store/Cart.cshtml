@@ -1,40 +1,67 @@
 ﻿@{
-    ViewData["Title"] = "Coș";
+    ViewData["Title"] = "Cos";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
     var cart = ViewBag.Cart;
 }
 
-<section class="page-header">
-    <h1>Coșul meu</h1>
-    <p>Produsele selectate pentru comandă.</p>
+<section class="shop-hero">
+    <div>
+        <span class="hero-kicker">Shopping Cart</span>
+        <h1>Cosul meu</h1>
+        <p>Verifica produsele alese si continua spre checkout.</p>
+    </div>
+
+    <a href="/Store/Catalog" class="btn secondary">Continua cumparaturile</a>
 </section>
 
-<section class="cart-box">
-    @if (cart.Count == 0)
-    {
-        <p>Coșul este gol.</p>
+@if (cart.Count == 0)
+{
+    <section class="empty-state">
+        <h2>Cosul este gol</h2>
+        <p>Adauga produse din catalog pentru a continua comanda.</p>
         <a href="/Store/Catalog" class="btn primary">Mergi la catalog</a>
-    }
-    else
-    {
+    </section>
+}
+else
+{
+    <section class="cart-list">
         @foreach (var item in cart)
         {
             <div class="cart-line">
-                <div>
-                    <h3>@item.Product.Name</h3>
-                    <p>@item.Product.Category | @item.Product.Color | Mărime @item.Product.Size</p>
+                <div class="cart-product">
+                    <div class="cart-img">
+                        @item.Product.Category
+                    </div>
+
+                    <div>
+                        <h3>@item.Product.Name</h3>
+                        <p>@item.Product.Category | @item.Product.Color | Marime @item.Product.Size</p>
+                        <strong>@item.Product.Price MDL</strong>
+                    </div>
                 </div>
 
-                <div>
-                    <b>@item.Quantity x @item.Product.Price MDL</b>
+                <div class="quantity-actions">
+                    <a href="/Store/DecreaseQuantity/@item.Product.Id">-</a>
+                    <span>@item.Quantity</span>
+                    <a href="/Store/IncreaseQuantity/@item.Product.Id">+</a>
                 </div>
+
+                <div class="line-total">
+                    @(item.Product.Price * item.Quantity) MDL
+                </div>
+
+                <a href="/Store/RemoveFromCart/@item.Product.Id" class="remove-link">Sterge</a>
             </div>
         }
+    </section>
 
-        <div class="cart-total">
-            Total: <b>@ViewBag.Total MDL</b>
+    <section class="cart-summary">
+        <h2>Total: @ViewBag.Total MDL</h2>
+
+        <div class="summary-actions">
+            <a href="/Store/ClearCart" class="btn secondary">Goleste cosul</a>
+            <a href="/Store/Checkout" class="btn primary">Checkout</a>
         </div>
-
-        <a href="/Store/Checkout" class="btn primary">Finalizează comanda</a>
-    }
-</section>
+    </section>
+}

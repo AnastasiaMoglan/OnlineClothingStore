@@ -10,26 +10,39 @@ public sealed class CatalogPage
         _styleFactory = styleFactory;
     }
 
-public int TotalCards => _products.Count;
-public int SharedStyles => _styleFactory.CreatedStylesCount;
-public int SavedObjects => TotalCards - SharedStyles;
+    public int TotalCards => _products.Count;
 
-public void AddProduct(
-    ProductCardContext context,
-    string category,
-    string badgeColor,
-    string fontColor,
-    string fontFamily)
-{
-    var style = _styleFactory.GetStyle(category, badgeColor, fontColor, fontFamily);
-    _products.Add((context, style));
-}
+    public int SharedStyles => _styleFactory.CreatedStylesCount;
 
-public IReadOnlyList<string> Render()
-{
-    return _products
-        .Select(x => x.Style.Render(x.Context))
-        .ToList()
-        .AsReadOnly();
-}
+    public int SavedObjects => TotalCards - SharedStyles;
+
+    public void AddProduct(ProductCardContext context)
+    {
+        ProductCardStyle style = _styleFactory.GetStyle(context.Category);
+
+        _products.Add((context, style));
+    }
+
+    public IReadOnlyList<string> Render()
+    {
+        List<string> result = new();
+
+        foreach (var product in _products)
+        {
+            string cardText =
+                $"Produs: {product.Context.Name} | " +
+                $"Categorie: {product.Context.Category} | " +
+                $"Pret: {product.Context.Price} MDL | " +
+                $"Marime: {product.Context.Size} | " +
+                $"Stil partajat: {product.Style.Category}, " +
+                $"{product.Style.BadgeColor}, " +
+                $"{product.Style.TextColor}, " +
+                $"{product.Style.FontFamily}, " +
+                $"{product.Style.BackgroundColor}";
+
+            result.Add(cardText);
+        }
+
+        return result.AsReadOnly();
+    }
 }

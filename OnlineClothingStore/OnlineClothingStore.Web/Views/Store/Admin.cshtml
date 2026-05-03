@@ -1,11 +1,24 @@
 ﻿@{
     ViewData["Title"] = "Admin";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var categoryStyles = ViewBag.CategoryStyles;
 }
 
-<section class="page-header">
-    <h1>Admin Panel</h1>
-    <p>Acces intern pentru angajații magazinului.</p>
+<section class="shop-hero">
+    <div>
+        <span class="hero-kicker">Admin Panel</span>
+        <h1>Administrare stiluri categorii</h1>
+        <p>
+            Aici modifici stilul partajat al unei categorii. Toate produsele din categoria respectiva
+            vor folosi acelasi obiect Flyweight actualizat.
+        </p>
+    </div>
+
+    <div class="hero-actions">
+        <a href="/Store/Catalog" class="btn primary">Inapoi la catalog</a>
+        <a href="/Store/Logout" class="btn secondary">Logout</a>
+    </div>
 </section>
 
 <section class="admin-panel">
@@ -14,25 +27,53 @@
         <p>Rol: <b>@ViewBag.Role</b></p>
 
         <div class="checkout-actions">
-            <a href="/Store/Login?role=Customer">Intră ca Customer</a>
-            <a href="/Store/Login?role=Cashier">Intră ca Cashier</a>
-            <a href="/Store/Login?role=Manager">Intră ca Manager</a>
+            <a href="/Store/Login?role=Customer">Intra ca Customer</a>
+            <a href="/Store/Login?role=Cashier">Intra ca Cashier</a>
+            <a href="/Store/Login?role=Manager">Intra ca Manager</a>
         </div>
     </div>
 
     <div class="admin-card">
-        <h2>Supplier Prices</h2>
-        <p>Prețurile reale de la furnizor sunt date sensibile.</p>
-
-        <form method="get" action="/Store/Admin">
-            <input name="sku" value="TSHIRT-001" />
-            <button type="submit">Verifică preț furnizor</button>
-        </form>
-
-        <div class="supplier-result @(ViewBag.Access == true ? "allowed" : "denied")">
-            @ViewBag.SupplierResult
-        </div>
-
-        <p class="pattern-note">@ViewBag.ProxyInfo</p>
+        <h2>Flyweight in Admin</h2>
+        <p class="pattern-note">@ViewBag.FlyweightAdminInfo</p>
+        <p>
+            Modifica o culoare la categoria <b>T-Shirts</b>, salveaza, apoi verifica in catalog:
+            toate tricourile vor avea acelasi stil modificat.
+        </p>
     </div>
+</section>
+
+<section class="style-editor-grid">
+    @foreach (var style in categoryStyles)
+    {
+        <form method="post"
+              action="/Store/UpdateCategoryStyle"
+              class="style-editor-card"
+              style="background:@style.BackgroundColor; font-family:@style.FontFamily">
+
+            <h3>@style.Category</h3>
+
+            <input type="hidden" name="Category" value="@style.Category" />
+
+            <label>Culoare badge</label>
+            <input type="color" name="BadgeColor" value="@style.BadgeColor" />
+
+            <label>Culoare text badge</label>
+            <input type="color" name="TextColor" value="@style.TextColor" />
+
+            <label>Font card</label>
+            <select name="FontFamily">
+                <option value="Arial" selected="@(style.FontFamily == "Arial")">Arial</option>
+                <option value="Poppins" selected="@(style.FontFamily == "Poppins")">Poppins</option>
+                <option value="Roboto" selected="@(style.FontFamily == "Roboto")">Roboto</option>
+                <option value="Montserrat" selected="@(style.FontFamily == "Montserrat")">Montserrat</option>
+                <option value="Georgia" selected="@(style.FontFamily == "Georgia")">Georgia</option>
+            </select>
+
+            <label>Culoare fundal card</label>
+            <input type="color" name="BackgroundColor" value="@style.BackgroundColor" />
+
+            <button type="submit">Salveaza stilul</button>
+        </form>
+    }
 </section>

@@ -16,4 +16,10 @@
       <_ContentIncludedByDefault Remove="Views\StructuralPatterns\Index.cshtml" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Content Update="Views\Store\Index.cshtml">
+        <DependentUpon>Catalog.cshtml</DependentUpon>
+      </Content>
+    </ItemGroup>
+
 </Project>

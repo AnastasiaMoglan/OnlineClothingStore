@@ -1,0 +1,33 @@
+﻿@{
+    ViewData["Title"] = "Admin Login";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="login-page">
+    <div class="login-card">
+        <span class="hero-kicker">Admin Access</span>
+
+        <h1>Autentificare administrator</h1>
+
+        <p>
+            Pentru a modifica stilurile partajate ale categoriilor, trebuie sa intri ca Manager.
+            Utilizatorii obisnuiti nu au acces la panoul de administrare.
+        </p>
+
+        <form method="post" action="/Store/Login" class="login-form">
+            <label>Alege rolul</label>
+
+            <select name="role">
+                <option value="Customer">Customer</option>
+                <option value="Cashier">Cashier</option>
+                <option value="Manager">Manager</option>
+            </select>
+
+            <button type="submit">Login</button>
+        </form>
+
+        <div class="login-note">
+            <b>Acces permis:</b> doar pentru rolul Manager.
+        </div>
+    </div>
+</section>

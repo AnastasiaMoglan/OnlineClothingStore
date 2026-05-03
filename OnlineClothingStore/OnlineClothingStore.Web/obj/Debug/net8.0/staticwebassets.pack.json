@@ -5,6 +5,10 @@
       "PackagePath": "staticwebassets\\css\\store.css"
     },
     {
+      "Id": "C:\\Users\\anast\\OneDrive\\Desktop\\TMPPPlab\\OnlineClothingStore\\OnlineClothingStore.Web\\wwwroot\\images\\home-bg.png",
+      "PackagePath": "staticwebassets\\images\\home-bg.png"
+    },
+    {
       "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.OnlineClothingStore.Web.Microsoft.AspNetCore.StaticWebAssets.props",
       "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
     },

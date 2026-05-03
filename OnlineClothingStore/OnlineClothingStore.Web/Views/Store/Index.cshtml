@@ -1,55 +1,104 @@
 ﻿@{
     ViewData["Title"] = "Home";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    var featured = ViewBag.FeaturedProducts;
+
+    var featuredProducts = ViewBag.FeaturedProducts;
+    var categories = ViewBag.Categories;
 }
 
-<section class="hero">
-    <div class="hero-text">
-        <span class="tag">New Collection 2026</span>
-        <h1>Haine moderne pentru orice stil</h1>
+<section class="home-hero-fashion">
+    <div class="home-hero-content">
+        <span class="home-badge">BlueWear Collection</span>
+
+        <h1>Îmbracă-te cu stil, în fiecare zi</h1>
+
         <p>
-            Descoperă colecția noastră de tricouri, jeans, geci, rochii și încălțăminte.
-            Magazin online simplu, rapid și comod.
+            Descoperă colecția BlueWear: haine moderne, confortabile și ușor de purtat,
+            potrivite pentru orice stil — casual, elegant sau streetwear.
         </p>
 
-        <div class="hero-buttons">
+        <div class="home-hero-buttons">
             <a href="/Store/Catalog" class="btn primary">Vezi catalogul</a>
-            <a href="/Store/Cart" class="btn secondary">Coșul meu</a>
+            <a href="/Store/Wishlist" class="btn secondary">Wishlist</a>
         </div>
-    </div>
-
-    <div class="hero-card">
-        <h3>Promoție activă</h3>
-        <pre>@ViewBag.Promotion</pre>
-
-        <div class="promo-switch">
-            <a href="/Store/Index?promoChannel=email">Email</a>
-            <a href="/Store/Index?promoChannel=mobile">Mobile App</a>
-            <a href="/Store/Index?promoChannel=display">Store Display</a>
-        </div>
-
-        <p class="pattern-note">@ViewBag.PatternInfo</p>
     </div>
 </section>
 
-<section class="section">
-    <h2>Produse recomandate</h2>
+<section class="home-short-info">
+    <div class="home-info-card">
+        <h3>Stil modern</h3>
+        <p>Produse actuale, ușor de combinat și potrivite pentru fiecare zi.</p>
+    </div>
 
-    <div class="product-grid">
-        @foreach (var product in featured)
+    <div class="home-info-card">
+        <h3>Categorii clare</h3>
+        <p>Tricouri, jeans, hanorace, rochii, geci și încălțăminte într-un singur loc.</p>
+    </div>
+
+    <div class="home-info-card">
+        <h3>Shopping simplu</h3>
+        <p>Adaugi rapid produsele preferate în coș sau în wishlist.</p>
+    </div>
+</section>
+
+<section class="home-categories-section">
+    <div class="section-title-wrap">
+        <span class="section-kicker">Explorează</span>
+        <h2>Categorii populare</h2>
+    </div>
+
+    <div class="category-chip-list">
+        @foreach (var category in categories)
         {
-            <div class="product-card">
-                <div class="product-img">@product.Category</div>
-                <h3>@product.Name</h3>
-                <p>@product.Color | Mărime @product.Size</p>
-                <strong>@product.Price MDL</strong>
+            <a href="/Store/Catalog?category=@category" class="category-chip">
+                @category
+            </a>
+        }
+    </div>
+</section>
 
-                <div class="card-actions">
-                    <a href="/Store/Product/@product.Id">Detalii</a>
-                    <a href="/Store/AddToCart/@product.Id">Adaugă în coș</a>
+<section class="home-featured-products">
+    <div class="section-title-wrap">
+        <span class="section-kicker">Recomandări</span>
+        <h2>Produse recomandate</h2>
+    </div>
+
+    <div class="featured-grid">
+        @foreach (var product in featuredProducts)
+        {
+            <div class="featured-product-card">
+                <div class="featured-product-image">
+                    <span>@product.Category</span>
+                </div>
+
+                <div class="featured-product-content">
+                    <span class="featured-category">@product.Category</span>
+
+                    <h3>@product.Name</h3>
+                    <p>Culoare: @product.Color</p>
+                    <p>Mărime: @product.Size</p>
+
+                    <strong>@product.Price MDL</strong>
+
+                    <div class="featured-actions">
+                        <a href="/Store/Product/@product.Id">Detalii</a>
+                        <a href="/Store/AddToCart/@product.Id">Adaugă în coș</a>
+                    </div>
                 </div>
             </div>
         }
+    </div>
+</section>
+
+<section class="home-bottom-banner">
+    <div class="home-bottom-banner-content">
+        <span class="section-kicker">BlueWear</span>
+        <h2>Găsește outfitul perfect pentru tine</h2>
+        <p>
+            Intră în catalog și alege hainele care ți se potrivesc cel mai bine.
+            Un magazin online simplu, modern și ușor de folosit.
+        </p>
+
+        <a href="/Store/Catalog" class="btn primary">Începe cumpărăturile</a>
     </div>
 </section>

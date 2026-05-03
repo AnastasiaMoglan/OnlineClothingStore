@@ -4,17 +4,22 @@
     var wishlist = ViewBag.Wishlist;
 }
 
-<section class="page-header">
-    <h1>Wishlist</h1>
-    <p>Produsele salvate pentru cumpărare ulterioară.</p>
+<section class="shop-hero">
+    <div>
+        <span class="hero-kicker">Wishlist</span>
+        <h1>Produse favorite</h1>
+        <p>Produsele salvate pentru cumparare ulterioara.</p>
+    </div>
+
+    <a href="/Store/Catalog" class="btn primary">Mergi la catalog</a>
 </section>
 
 <section class="product-grid">
     @if (wishlist.Count == 0)
     {
-        <div class="empty-cart">
+        <div class="empty-state">
             <h2>Wishlist-ul este gol</h2>
-            <p>Adaugă produse favorite din catalog.</p>
+            <p>Adauga produse favorite din catalog.</p>
             <a href="/Store/Catalog" class="btn primary">Mergi la catalog</a>
         </div>
     }
@@ -23,18 +28,20 @@
         @foreach (var product in wishlist)
         {
             <div class="product-card">
-                <img src="@product.Image" alt="@product.Name" class="product-photo" />
+                <div class="product-img">
+                    <span class="image-fallback">@product.Category</span>
+                </div>
 
                 <div class="product-content">
                     <span class="category-label">@product.Category</span>
                     <h3>@product.Name</h3>
-                    <p>@product.Color | Mărime @product.Size</p>
-                    <strong>@product.Price MDL</strong>
+                    <p>@product.Color | Marime @product.Size</p>
+                    <strong class="price">@product.Price MDL</strong>
 
                     <div class="card-actions">
                         <a href="/Store/Product/@product.Id">Detalii</a>
-                        <a href="/Store/AddToCart/@product.Id">În coș</a>
-                        <a href="/Store/RemoveFromWishlist/@product.Id" class="light-action">Șterge</a>
+                        <a href="/Store/AddToCart/@product.Id">In cos</a>
+                        <a href="/Store/RemoveFromWishlist/@product.Id" class="light-action">Sterge</a>
                     </div>
                 </div>
             </div>

@@ -2,8 +2,11 @@
 <html lang="ro">
 <head>
     <meta charset="utf-8" />
-    <title>@ViewData["Title"] - Online Clothing Store</title>
-    <link rel="stylesheet" href="~/css/store.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>@ViewData["Title"] - BlueWear</title>
+
+    <link rel="stylesheet" href="~/css/store.css" asp-append-version="true" />
 </head>
 <body>
 
@@ -15,13 +18,13 @@
     <nav>
         <a href="/Store/Index">Home</a>
         <a href="/Store/Catalog">Catalog</a>
-        <a href="/Store/Cart">Coș</a>
-        <a href="/Store/Admin">Admin</a>
+        <a href="/Store/Wishlist">Wishlist (@(ViewBag.WishlistCount ?? 0))</a>
+        <a href="/Store/Cart">Cos (@(ViewBag.CartCount ?? 0))</a>
+        <a href="/Store/AdminLogin">Admin Login</a>
     </nav>
 
     <div class="auth">
-        <a href="/Store/Login?role=Customer">Login Client</a>
-        <a href="/Store/Login?role=Manager" class="manager">Login Manager</a>
+        <a href="/Store/AdminLogin" class="manager">Admin</a>
         <a href="/Store/Logout">Logout</a>
     </div>
 </header>
@@ -32,6 +35,7 @@
 
 <footer>
     <p>© 2026 BlueWear Online Clothing Store | TMPPP / OOP</p>
+    <p class="footer-note">Structural pattern demonstrat: Flyweight</p>
 </footer>
 
 </body>
