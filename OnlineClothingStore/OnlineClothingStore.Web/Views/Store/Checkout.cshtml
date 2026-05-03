@@ -5,20 +5,27 @@
     var cart = ViewBag.Cart;
 
     bool wasCalculated = ViewBag.WasCalculated == true;
+
     string orderType = ViewBag.OrderType as string ?? "standard";
     string deliveryMethod = ViewBag.DeliveryMethod as string ?? "courier";
+    string discountType = ViewBag.DiscountType as string ?? "none";
 
     decimal productsTotal = ViewBag.ProductsTotal ?? 0;
     decimal servicePrice = ViewBag.ServicePrice ?? 0;
     decimal deliveryPrice = ViewBag.DeliveryPrice ?? 0;
-    decimal finalTotal = ViewBag.FinalTotal ?? productsTotal;
+    decimal discountValue = ViewBag.DiscountValue ?? 0;
+    decimal totalAfterDiscount = ViewBag.TotalAfterDiscount ?? productsTotal;
+    decimal finalTotal = ViewBag.FinalTotal ?? totalAfterDiscount;
 }
 
 <section class="shop-hero">
     <div>
         <span class="hero-kicker">Checkout</span>
         <h1>Finalizare comandă</h1>
-        <p>Aici verifici hainele alese, apoi selectezi tipul comenzii și metoda de livrare.</p>
+        <p>
+            Aici verifici hainele alese, apoi selectezi tipul comenzii,
+            metoda de livrare și reducerea aplicată.
+        </p>
     </div>
 
     <a asp-controller="Store" asp-action="Cart" class="btn secondary">Înapoi la coș</a>
@@ -54,11 +61,13 @@ else
 
     <section class="bridge-page checkout-delivery">
         <div class="bridge-layout">
+
             <form asp-controller="Store" asp-action="Checkout" method="post" class="bridge-form">
-                <h2>Detalii livrare</h2>
+                <h2>Detalii livrare și reducere</h2>
 
                 <p class="bridge-small-info">
-                    După ce ai ales hainele, completează datele și selectează cum vrei să fie procesată comanda.
+                    După ce ai ales hainele, completează datele, selectează procesarea comenzii,
+                    metoda de livrare și strategia de reducere.
                 </p>
 
                 <div class="form-group">
@@ -129,6 +138,42 @@ else
                     </div>
                 </div>
 
+                <div class="strategy-option-box">
+                    <h3>Alege reducerea</h3>
+
+                    <label class="strategy-radio-item">
+                        <input type="radio" name="discountType" value="none" @(discountType == "none" ? "checked" : "") />
+                        <span>
+                            <strong>Fără reducere</strong>
+                            <small>Comanda se calculează fără reducere.</small>
+                        </span>
+                    </label>
+
+                    <label class="strategy-radio-item">
+                        <input type="radio" name="discountType" value="newCustomer" @(discountType == "newCustomer" ? "checked" : "") />
+                        <span>
+                            <strong>Client nou</strong>
+                            <small>Reducere de 5% pentru prima comandă.</small>
+                        </span>
+                    </label>
+
+                    <label class="strategy-radio-item">
+                        <input type="radio" name="discountType" value="student" @(discountType == "student" ? "checked" : "") />
+                        <span>
+                            <strong>Student</strong>
+                            <small>Reducere de 10% pentru studenți.</small>
+                        </span>
+                    </label>
+
+                    <label class="strategy-radio-item">
+                        <input type="radio" name="discountType" value="vip" @(discountType == "vip" ? "checked" : "") />
+                        <span>
+                            <strong>VIP</strong>
+                            <small>Reducere de 15% pentru clienții VIP.</small>
+                        </span>
+                    </label>
+                </div>
+
                 <button type="submit" class="bridge-btn">
                     Calculează și confirmă comanda
                 </button>
@@ -144,6 +189,16 @@ else
                     </div>
 
                     <div>
+                        <span>Reducere aplicată</span>
+                        <strong>-@discountValue MDL</strong>
+                    </div>
+
+                    <div>
+                        <span>Total după reducere</span>
+                        <strong>@totalAfterDiscount MDL</strong>
+                    </div>
+
+                    <div>
                         <span>Cost serviciu</span>
                         <strong>@servicePrice MDL</strong>
                     </div>
@@ -156,6 +211,30 @@ else
                     <div class="bridge-total">
                         <span>Total final</span>
                         <strong>@finalTotal MDL</strong>
+                    </div>
+                </div>
+
+                <div class="strategy-result-box">
+                    <h3>Strategie de reducere</h3>
+
+                    <div class="checkout-summary-row">
+                        <span>Strategie selectată</span>
+                        <strong>@ViewBag.DiscountName</strong>
+                    </div>
+
+                    <div class="checkout-summary-row">
+                        <span>Descriere</span>
+                        <strong>@ViewBag.DiscountDescription</strong>
+                    </div>
+
+                    <div class="checkout-summary-row">
+                        <span>Valoare reducere</span>
+                        <strong>-@discountValue MDL</strong>
+                    </div>
+
+                    <div class="checkout-summary-row">
+                        <span>Total după reducere</span>
+                        <strong>@totalAfterDiscount MDL</strong>
                     </div>
                 </div>
 
@@ -188,7 +267,8 @@ else
                 else
                 {
                     <p class="empty-result">
-                        Selectează tipul comenzii și metoda de livrare, apoi apasă pe buton pentru totalul final.
+                        Selectează tipul comenzii, metoda de livrare și reducerea,
+                        apoi apasă pe buton pentru totalul final.
                     </p>
                 }
             </div>

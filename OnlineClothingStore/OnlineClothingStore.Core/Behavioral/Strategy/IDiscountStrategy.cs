@@ -1,7 +1,10 @@
-﻿namespace OnlineClothingStore.Core.Behavioral.Strategy;
+﻿namespace OnlineClothingStore.App.Structural.Strategy;
 
 public interface IDiscountStrategy
 {
-    decimal ApplyDiscount(decimal price);
-    string GetDescription();
+    string Name { get; }
+
+    string Description { get; }
+
+    decimal CalculateDiscount(decimal productsTotal);
 }

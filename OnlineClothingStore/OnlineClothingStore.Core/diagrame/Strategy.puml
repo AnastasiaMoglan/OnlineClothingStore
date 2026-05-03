@@ -1,43 +1,67 @@
 ﻿@startuml
-title Strategy Pattern - Discount System for Online Clothing Store
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam class {
+    BackgroundColor #F8FBFF
+    BorderColor #1F5F99
+    ArrowColor #1F5F99
+}
+
+title Strategy Pattern - BlueWear Discount System
 
 interface IDiscountStrategy {
-    +ApplyDiscount(price: decimal): decimal
-    +GetDescription(): string
+    + Name : string
+    + Description : string
+    + CalculateDiscount(productsTotal : decimal) : decimal
 }
 
 class NoDiscountStrategy {
-    +ApplyDiscount(price: decimal): decimal
-    +GetDescription(): string
+    + Name : string
+    + Description : string
+    + CalculateDiscount(productsTotal : decimal) : decimal
+}
+
+class NewCustomerDiscountStrategy {
+    + Name : string
+    + Description : string
+    + CalculateDiscount(productsTotal : decimal) : decimal
+}
+
+class StudentDiscountStrategy {
+    + Name : string
+    + Description : string
+    + CalculateDiscount(productsTotal : decimal) : decimal
 }
 
 class VipDiscountStrategy {
-    -discountPercent: decimal
-    +VipDiscountStrategy(discountPercent: decimal)
-    +ApplyDiscount(price: decimal): decimal
-    +GetDescription(): string
+    + Name : string
+    + Description : string
+    + CalculateDiscount(productsTotal : decimal) : decimal
 }
 
-class SeasonalDiscountStrategy {
-    -discountPercent: decimal
-    -seasonName: string
-    +SeasonalDiscountStrategy(discountPercent: decimal, seasonName: string)
-    +ApplyDiscount(price: decimal): decimal
-    +GetDescription(): string
+class DiscountCalculator {
+    - discountStrategy : IDiscountStrategy
+    + StrategyName : string
+    + StrategyDescription : string
+    + CalculateDiscount(productsTotal : decimal) : decimal
+    + CalculateTotalAfterDiscount(productsTotal : decimal) : decimal
 }
 
-class ProductPriceCalculator {
-    -discountStrategy: IDiscountStrategy
-    +ProductPriceCalculator(discountStrategy: IDiscountStrategy)
-    +SetDiscountStrategy(strategy: IDiscountStrategy): void
-    +CalculateFinalPrice(price: decimal): decimal
-    +GetDiscountInfo(): string
+class StoreController {
+    + Checkout() : IActionResult
+    + Checkout(customerName, address, orderType, deliveryMethod, discountType) : IActionResult
+    - CreateDiscountStrategy(discountType : string) : IDiscountStrategy
+    - ConfigureStrategyViewData(...) : void
 }
 
 IDiscountStrategy <|.. NoDiscountStrategy
+IDiscountStrategy <|.. NewCustomerDiscountStrategy
+IDiscountStrategy <|.. StudentDiscountStrategy
 IDiscountStrategy <|.. VipDiscountStrategy
-IDiscountStrategy <|.. SeasonalDiscountStrategy
 
-ProductPriceCalculator --> IDiscountStrategy
+DiscountCalculator o-- IDiscountStrategy : uses
+
+StoreController ..> DiscountCalculator : creates
+StoreController ..> IDiscountStrategy : selects strategy
 
 @enduml

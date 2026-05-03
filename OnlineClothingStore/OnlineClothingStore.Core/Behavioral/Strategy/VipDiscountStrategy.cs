@@ -1,21 +1,13 @@
-﻿namespace OnlineClothingStore.Core.Behavioral.Strategy;
+﻿namespace OnlineClothingStore.App.Structural.Strategy;
 
 public class VipDiscountStrategy : IDiscountStrategy
 {
-    private readonly decimal _discountPercent;
+    public string Name => "VIP";
 
-    public VipDiscountStrategy(decimal discountPercent)
-    {
-        _discountPercent = discountPercent;
-    }
+    public string Description => "Se aplică o reducere de 15% pentru clienții VIP.";
 
-    public decimal ApplyDiscount(decimal price)
+    public decimal CalculateDiscount(decimal productsTotal)
     {
-        return price - price * _discountPercent / 100;
-    }
-
-    public string GetDescription()
-    {
-        return $"Reducere VIP de {_discountPercent}%";
+        return productsTotal * 0.15m;
     }
 }

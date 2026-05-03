@@ -7,6 +7,7 @@ using OnlineClothingStore.App.Structural.Bridge;
 using OnlineClothingStore.App.Structural.Decorator;
 using OnlineClothingStore.App.Structural.Flyweight;
 using OnlineClothingStore.App.Structural.Proxy;
+using OnlineClothingStore.App.Structural.Strategy;
 using OnlineClothingStore.Web.Models;
 
 namespace OnlineClothingStore.Web.Controllers;
@@ -303,8 +304,22 @@ public class StoreController : Controller
     {
         decimal productsTotal = ShoppingCart.Sum(c => c.Product.Price * c.Quantity);
 
+        IDiscountStrategy discountStrategy = CreateDiscountStrategy("none");
+        DiscountCalculator discountCalculator = new(discountStrategy);
+
+        decimal discountValue = discountCalculator.CalculateDiscount(productsTotal);
+        decimal totalAfterDiscount = discountCalculator.CalculateTotalAfterDiscount(productsTotal);
+
         ViewBag.Cart = ShoppingCart;
         ViewBag.Total = productsTotal;
+
+        ConfigureStrategyViewData(
+            discountType: "none",
+            discountValue: discountValue,
+            totalAfterDiscount: totalAfterDiscount,
+            discountName: discountCalculator.StrategyName,
+            discountDescription: discountCalculator.StrategyDescription
+        );
 
         ConfigureBridgeViewData(
             customerName: "Ana",
@@ -314,7 +329,7 @@ public class StoreController : Controller
             productsTotal: productsTotal,
             servicePrice: 0,
             deliveryPrice: 0,
-            finalTotal: productsTotal,
+            finalTotal: totalAfterDiscount,
             orderTypeName: "",
             deliveryMethodName: "",
             preparationResult: "",
@@ -332,7 +347,8 @@ public class StoreController : Controller
         string customerName,
         string address,
         string orderType,
-        string deliveryMethod)
+        string deliveryMethod,
+        string discountType)
     {
         customerName = string.IsNullOrWhiteSpace(customerName)
             ? "Client BlueWear"
@@ -350,7 +366,17 @@ public class StoreController : Controller
             ? "courier"
             : deliveryMethod;
 
+        discountType = string.IsNullOrWhiteSpace(discountType)
+            ? "none"
+            : discountType;
+
         decimal productsTotal = ShoppingCart.Sum(c => c.Product.Price * c.Quantity);
+
+        IDiscountStrategy discountStrategy = CreateDiscountStrategy(discountType);
+        DiscountCalculator discountCalculator = new(discountStrategy);
+
+        decimal discountValue = discountCalculator.CalculateDiscount(productsTotal);
+        decimal totalAfterDiscount = discountCalculator.CalculateTotalAfterDiscount(productsTotal);
 
         IDeliveryMethod selectedDeliveryMethod = CreateDeliveryMethod(deliveryMethod);
         DeliveryOrder deliveryOrder = CreateDeliveryOrder(orderType, selectedDeliveryMethod);
@@ -360,10 +386,18 @@ public class StoreController : Controller
 
         decimal servicePrice = deliveryOrder.ServicePrice;
         decimal deliveryPrice = deliveryOrder.GetDeliveryPrice();
-        decimal finalTotal = deliveryOrder.CalculateTotal(productsTotal);
+        decimal finalTotal = totalAfterDiscount + servicePrice + deliveryPrice;
 
         ViewBag.Cart = ShoppingCart;
         ViewBag.Total = productsTotal;
+
+        ConfigureStrategyViewData(
+            discountType: discountType,
+            discountValue: discountValue,
+            totalAfterDiscount: totalAfterDiscount,
+            discountName: discountCalculator.StrategyName,
+            discountDescription: discountCalculator.StrategyDescription
+        );
 
         ConfigureBridgeViewData(
             customerName: customerName,
@@ -569,6 +603,12 @@ public class StoreController : Controller
 
         decimal productsTotal = ShoppingCart.Sum(c => c.Product.Price * c.Quantity);
 
+        IDiscountStrategy discountStrategy = CreateDiscountStrategy("none");
+        DiscountCalculator discountCalculator = new(discountStrategy);
+
+        decimal discountValue = discountCalculator.CalculateDiscount(productsTotal);
+        decimal totalAfterDiscount = discountCalculator.CalculateTotalAfterDiscount(productsTotal);
+
         IDeliveryMethod selectedDeliveryMethod = CreateDeliveryMethod(deliveryMethod);
 
         DeliveryOrder deliveryOrder = CreateDeliveryOrder(orderType, selectedDeliveryMethod);
@@ -578,7 +618,15 @@ public class StoreController : Controller
 
         decimal servicePrice = deliveryOrder.ServicePrice;
         decimal deliveryPrice = deliveryOrder.GetDeliveryPrice();
-        decimal finalTotal = deliveryOrder.CalculateTotal(productsTotal);
+        decimal finalTotal = totalAfterDiscount + servicePrice + deliveryPrice;
+
+        ConfigureStrategyViewData(
+            discountType: "none",
+            discountValue: discountValue,
+            totalAfterDiscount: totalAfterDiscount,
+            discountName: discountCalculator.StrategyName,
+            discountDescription: discountCalculator.StrategyDescription
+        );
 
         ConfigureBridgeViewData(
             customerName: customerName,
@@ -660,9 +708,44 @@ public class StoreController : Controller
     }
 
     // ============================================================
+    // STRATEGY PATTERN
+    // Functionalitate adaugata in Checkout.
+    // Demonstreaza alegerea algoritmului de reducere:
+    // Fara reducere / Client nou / Student / VIP.
+    // ============================================================
+
+    private static IDiscountStrategy CreateDiscountStrategy(string discountType)
+    {
+        return discountType switch
+        {
+            "newCustomer" => new NewCustomerDiscountStrategy(),
+            "student" => new StudentDiscountStrategy(),
+            "vip" => new VipDiscountStrategy(),
+            _ => new NoDiscountStrategy()
+        };
+    }
+
+    private void ConfigureStrategyViewData(
+        string discountType,
+        decimal discountValue,
+        decimal totalAfterDiscount,
+        string discountName,
+        string discountDescription)
+    {
+        ViewBag.DiscountType = discountType;
+        ViewBag.DiscountValue = discountValue;
+        ViewBag.TotalAfterDiscount = totalAfterDiscount;
+        ViewBag.DiscountName = discountName;
+        ViewBag.DiscountDescription = discountDescription;
+
+        ViewBag.StrategyInfo =
+            "Strategy permite alegerea algoritmului de reducere fara modificarea codului principal de checkout.";
+    }
+
+    // ============================================================
     // PROXY PATTERN
     // Functionalitate adaugata fara a modifica Flyweight,
-    // Decorator sau Bridge.
+    // Decorator, Bridge sau Strategy.
     // Demonstreaza controlul accesului la raportul de stocuri.
     // ============================================================
 
