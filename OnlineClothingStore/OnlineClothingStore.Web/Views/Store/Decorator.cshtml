@@ -1,0 +1,144 @@
+﻿@{
+    ViewData["Title"] = "Notificări";
+
+    List<string> channels = ViewBag.Channels as List<string> ?? new List<string>();
+    List<string> decoratorChain = ViewBag.DecoratorChain as List<string> ?? new List<string>();
+
+    bool wasSent = ViewBag.WasSent == true;
+    bool useEmail = ViewBag.UseEmail == true;
+    bool useSms = ViewBag.UseSms == true;
+    bool usePush = ViewBag.UsePush == true;
+}
+
+<section class="decorator-page">
+
+    <div class="decorator-hero">
+        <div>
+            <p class="page-label">Notificări comandă</p>
+            <h1>Alege notificările</h1>
+            <p>
+                Selectează canalele prin care clientul va primi mesajul despre comandă.
+                Poți alege Email, SMS, Push sau orice combinație între ele.
+            </p>
+        </div>
+
+        <div class="pattern-card">
+            <span>Notificare</span>
+            <strong>+</strong>
+            <span>Email / SMS / Push</span>
+        </div>
+    </div>
+
+    <div class="decorator-layout">
+
+        <form asp-controller="Store" asp-action="Decorator" method="post" class="decorator-form">
+
+            <h2>Configurare notificare</h2>
+
+            <div class="form-group">
+                <label>Nume client</label>
+                <input type="text" name="customerName" value="@ViewBag.CustomerName" />
+            </div>
+
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email" value="@ViewBag.Email" />
+            </div>
+
+            <div class="form-group">
+                <label>Telefon</label>
+                <input type="text" name="phoneNumber" value="@ViewBag.PhoneNumber" />
+            </div>
+
+            <div class="form-group">
+                <label>Device Token</label>
+                <input type="text" name="deviceToken" value="@ViewBag.DeviceToken" />
+            </div>
+
+            <div class="form-group">
+                <label>Mesaj</label>
+                <textarea name="message">@ViewBag.Message</textarea>
+            </div>
+
+            <div class="options-box">
+                <h3>Alege</h3>
+
+                <label class="option-item">
+                    <input type="checkbox" name="useEmail" value="true" @(useEmail ? "checked" : "") />
+                    <input type="hidden" name="useEmail" value="false" />
+                    <span>Email</span>
+                </label>
+
+                <label class="option-item">
+                    <input type="checkbox" name="useSms" value="true" @(useSms ? "checked" : "") />
+                    <input type="hidden" name="useSms" value="false" />
+                    <span>SMS</span>
+                </label>
+
+                <label class="option-item">
+                    <input type="checkbox" name="usePush" value="true" @(usePush ? "checked" : "") />
+                    <input type="hidden" name="usePush" value="false" />
+                    <span>Push</span>
+                </label>
+            </div>
+
+            <button type="submit" class="decorator-btn">
+                Trimite notificarea
+            </button>
+
+        </form>
+
+        <div class="decorator-result">
+
+            <h2>Rezultat notificare</h2>
+
+            @if (wasSent)
+            {
+                <div class="success-box">
+                    Notificarea a fost generată cu succes.
+                </div>
+
+                <h3>Pași folosiți:</h3>
+
+                <div class="chain-box">
+                    @foreach (string item in decoratorChain)
+                    {
+                        <span>@item</span>
+                    }
+                </div>
+
+                <h3>Canale activate:</h3>
+
+                <div class="channels-list">
+                    @foreach (string channel in channels)
+                    {
+                        <div class="channel-card">
+                            @channel
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="empty-result">
+                    Bifează Email, SMS sau Push și apasă pe buton pentru a vedea notificările activate.
+                </p>
+            }
+
+            <div class="explanation-box">
+                <h3>Explicație</h3>
+                <p>
+                    Notificarea de bază trimite mesajul comenzii.
+                    Fiecare opțiune bifată adaugă încă un canal de trimitere.
+                </p>
+
+                <p>
+                    Poți trimite notificarea printr-un singur canal sau prin toate cele trei: Email, SMS și Push.
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using OnlineClothingStore.App.Structural.Decorator;
 using OnlineClothingStore.App.Structural.Flyweight;
 using OnlineClothingStore.Web.Models;
 
@@ -280,6 +281,151 @@ public class StoreController : Controller
         AddLayoutCounters();
 
         return View();
+    }
+
+    // ============================================================
+    // DECORATOR PATTERN
+    // Functionalitate adaugata fara a modifica Flyweight.
+    // Demonstreaza:
+    // BasicOrderNotification + EmailNotificationDecorator
+    // + SmsNotificationDecorator + PushNotificationDecorator
+    // ============================================================
+
+    public IActionResult Decorator()
+    {
+        ConfigureDecoratorViewData(
+            customerName: "Ana",
+            email: "ana@bluewear.com",
+            phoneNumber: "+37360000000",
+            deviceToken: "device-token-123",
+            message: "Comanda ta BlueWear a fost confirmata.",
+            useEmail: true,
+            useSms: true,
+            usePush: false,
+            wasSent: false,
+            channels: new List<string>(),
+            decoratorChain: new List<string>()
+        );
+
+        AddLayoutCounters();
+
+        return View();
+    }
+
+    [HttpPost]
+    public IActionResult Decorator(
+        string customerName,
+        string email,
+        string phoneNumber,
+        string deviceToken,
+        string message,
+        bool useEmail,
+        bool useSms,
+        bool usePush)
+    {
+        customerName = string.IsNullOrWhiteSpace(customerName)
+            ? "Client BlueWear"
+            : customerName;
+
+        email = string.IsNullOrWhiteSpace(email)
+            ? "client@bluewear.com"
+            : email;
+
+        phoneNumber = string.IsNullOrWhiteSpace(phoneNumber)
+            ? "+37360000000"
+            : phoneNumber;
+
+        deviceToken = string.IsNullOrWhiteSpace(deviceToken)
+            ? "device-token-123"
+            : deviceToken;
+
+        message = string.IsNullOrWhiteSpace(message)
+            ? "Comanda ta BlueWear a fost confirmata."
+            : message;
+
+        List<string> decoratorChain = new()
+        {
+            "Notificare de baza"
+        };
+
+        IOrderNotification notification = new BasicOrderNotification();
+
+        if (useEmail)
+        {
+            notification = new EmailNotificationDecorator(notification);
+            decoratorChain.Add("Email");
+        }
+
+        if (useSms)
+        {
+            notification = new SmsNotificationDecorator(notification);
+            decoratorChain.Add("SMS");
+        }
+
+        if (usePush)
+        {
+            notification = new PushNotificationDecorator(notification);
+            decoratorChain.Add("Push");
+        }
+
+        NotificationContext context = new(
+            customerName,
+            email,
+            phoneNumber,
+            deviceToken,
+            message
+        );
+
+        NotificationResult result = notification.Send(context);
+
+        ConfigureDecoratorViewData(
+            customerName: customerName,
+            email: email,
+            phoneNumber: phoneNumber,
+            deviceToken: deviceToken,
+            message: message,
+            useEmail: useEmail,
+            useSms: useSms,
+            usePush: usePush,
+            wasSent: true,
+            channels: result.Channels.ToList(),
+            decoratorChain: decoratorChain
+        );
+
+        AddLayoutCounters();
+
+        return View();
+    }
+
+    private void ConfigureDecoratorViewData(
+        string customerName,
+        string email,
+        string phoneNumber,
+        string deviceToken,
+        string message,
+        bool useEmail,
+        bool useSms,
+        bool usePush,
+        bool wasSent,
+        List<string> channels,
+        List<string> decoratorChain)
+    {
+        ViewBag.CustomerName = customerName;
+        ViewBag.Email = email;
+        ViewBag.PhoneNumber = phoneNumber;
+        ViewBag.DeviceToken = deviceToken;
+        ViewBag.Message = message;
+
+        ViewBag.UseEmail = useEmail;
+        ViewBag.UseSms = useSms;
+        ViewBag.UsePush = usePush;
+
+        ViewBag.WasSent = wasSent;
+        ViewBag.Channels = channels;
+        ViewBag.DecoratorChain = decoratorChain;
+
+        ViewBag.DecoratorInfo =
+            "Notificarile pot fi trimise prin Email, SMS si Push.";
     }
 
     private static List<ProductViewModel> BuildProductCards(List<StoreProduct> products)
