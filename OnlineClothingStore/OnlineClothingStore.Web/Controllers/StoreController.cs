@@ -3,6 +3,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using OnlineClothingStore.App.Structural.Bridge;
 using OnlineClothingStore.App.Structural.Decorator;
 using OnlineClothingStore.App.Structural.Flyweight;
 using OnlineClothingStore.Web.Models;
@@ -275,8 +276,85 @@ public class StoreController : Controller
 
     public IActionResult Checkout()
     {
+        decimal productsTotal = ShoppingCart.Sum(c => c.Product.Price * c.Quantity);
+
         ViewBag.Cart = ShoppingCart;
-        ViewBag.Total = ShoppingCart.Sum(c => c.Product.Price * c.Quantity);
+        ViewBag.Total = productsTotal;
+
+        ConfigureBridgeViewData(
+            customerName: "Ana",
+            address: "Chisinau, bd. Stefan cel Mare 1",
+            orderType: "standard",
+            deliveryMethod: "courier",
+            productsTotal: productsTotal,
+            servicePrice: 0,
+            deliveryPrice: 0,
+            finalTotal: productsTotal,
+            orderTypeName: "",
+            deliveryMethodName: "",
+            preparationResult: "",
+            deliveryResult: "",
+            wasCalculated: false
+        );
+
+        AddLayoutCounters();
+
+        return View();
+    }
+
+    [HttpPost]
+    public IActionResult Checkout(
+        string customerName,
+        string address,
+        string orderType,
+        string deliveryMethod)
+    {
+        customerName = string.IsNullOrWhiteSpace(customerName)
+            ? "Client BlueWear"
+            : customerName;
+
+        address = string.IsNullOrWhiteSpace(address)
+            ? "Adresa nu a fost indicata"
+            : address;
+
+        orderType = string.IsNullOrWhiteSpace(orderType)
+            ? "standard"
+            : orderType;
+
+        deliveryMethod = string.IsNullOrWhiteSpace(deliveryMethod)
+            ? "courier"
+            : deliveryMethod;
+
+        decimal productsTotal = ShoppingCart.Sum(c => c.Product.Price * c.Quantity);
+
+        IDeliveryMethod selectedDeliveryMethod = CreateDeliveryMethod(deliveryMethod);
+        DeliveryOrder deliveryOrder = CreateDeliveryOrder(orderType, selectedDeliveryMethod);
+
+        string preparationResult = deliveryOrder.PrepareOrder();
+        string deliveryResult = deliveryOrder.CompleteDelivery(customerName, address);
+
+        decimal servicePrice = deliveryOrder.ServicePrice;
+        decimal deliveryPrice = deliveryOrder.GetDeliveryPrice();
+        decimal finalTotal = deliveryOrder.CalculateTotal(productsTotal);
+
+        ViewBag.Cart = ShoppingCart;
+        ViewBag.Total = productsTotal;
+
+        ConfigureBridgeViewData(
+            customerName: customerName,
+            address: address,
+            orderType: orderType,
+            deliveryMethod: deliveryMethod,
+            productsTotal: productsTotal,
+            servicePrice: servicePrice,
+            deliveryPrice: deliveryPrice,
+            finalTotal: finalTotal,
+            orderTypeName: deliveryOrder.OrderType,
+            deliveryMethodName: deliveryOrder.GetDeliveryMethodName(),
+            preparationResult: preparationResult,
+            deliveryResult: deliveryResult,
+            wasCalculated: true
+        );
 
         AddLayoutCounters();
 
@@ -426,6 +504,134 @@ public class StoreController : Controller
 
         ViewBag.DecoratorInfo =
             "Notificarile pot fi trimise prin Email, SMS si Push.";
+    }
+
+    // ============================================================
+    // BRIDGE PATTERN
+    // Functionalitate adaugata fara a modifica Flyweight sau Decorator.
+    // Demonstreaza separarea dintre:
+    // 1. Tipul comenzii: Standard / Express / Cadou
+    // 2. Metoda de livrare: Curier / Magazin / Locker
+    // ============================================================
+
+    public IActionResult Delivery()
+    {
+        return RedirectToAction(nameof(Checkout));
+    }
+
+    [HttpPost]
+    public IActionResult Delivery(
+        string customerName,
+        string address,
+        string orderType,
+        string deliveryMethod)
+    {
+        customerName = string.IsNullOrWhiteSpace(customerName)
+            ? "Client BlueWear"
+            : customerName;
+
+        address = string.IsNullOrWhiteSpace(address)
+            ? "Adresa nu a fost indicata"
+            : address;
+
+        orderType = string.IsNullOrWhiteSpace(orderType)
+            ? "standard"
+            : orderType;
+
+        deliveryMethod = string.IsNullOrWhiteSpace(deliveryMethod)
+            ? "courier"
+            : deliveryMethod;
+
+        decimal productsTotal = ShoppingCart.Sum(c => c.Product.Price * c.Quantity);
+
+        IDeliveryMethod selectedDeliveryMethod = CreateDeliveryMethod(deliveryMethod);
+
+        DeliveryOrder deliveryOrder = CreateDeliveryOrder(orderType, selectedDeliveryMethod);
+
+        string preparationResult = deliveryOrder.PrepareOrder();
+        string deliveryResult = deliveryOrder.CompleteDelivery(customerName, address);
+
+        decimal servicePrice = deliveryOrder.ServicePrice;
+        decimal deliveryPrice = deliveryOrder.GetDeliveryPrice();
+        decimal finalTotal = deliveryOrder.CalculateTotal(productsTotal);
+
+        ConfigureBridgeViewData(
+            customerName: customerName,
+            address: address,
+            orderType: orderType,
+            deliveryMethod: deliveryMethod,
+            productsTotal: productsTotal,
+            servicePrice: servicePrice,
+            deliveryPrice: deliveryPrice,
+            finalTotal: finalTotal,
+            orderTypeName: deliveryOrder.OrderType,
+            deliveryMethodName: deliveryOrder.GetDeliveryMethodName(),
+            preparationResult: preparationResult,
+            deliveryResult: deliveryResult,
+            wasCalculated: true
+        );
+
+        AddLayoutCounters();
+
+        return View();
+    }
+
+    private static IDeliveryMethod CreateDeliveryMethod(string deliveryMethod)
+    {
+        return deliveryMethod switch
+        {
+            "pickup" => new PickupDeliveryMethod(),
+            "locker" => new LockerDeliveryMethod(),
+            _ => new CourierDeliveryMethod()
+        };
+    }
+
+    private static DeliveryOrder CreateDeliveryOrder(string orderType, IDeliveryMethod deliveryMethod)
+    {
+        return orderType switch
+        {
+            "express" => new ExpressDeliveryOrder(deliveryMethod),
+            "gift" => new GiftDeliveryOrder(deliveryMethod),
+            _ => new StandardDeliveryOrder(deliveryMethod)
+        };
+    }
+
+    private void ConfigureBridgeViewData(
+        string customerName,
+        string address,
+        string orderType,
+        string deliveryMethod,
+        decimal productsTotal,
+        decimal servicePrice,
+        decimal deliveryPrice,
+        decimal finalTotal,
+        string orderTypeName,
+        string deliveryMethodName,
+        string preparationResult,
+        string deliveryResult,
+        bool wasCalculated)
+    {
+        ViewBag.CustomerName = customerName;
+        ViewBag.Address = address;
+
+        ViewBag.OrderType = orderType;
+        ViewBag.DeliveryMethod = deliveryMethod;
+
+        ViewBag.ProductsTotal = productsTotal;
+        ViewBag.ServicePrice = servicePrice;
+        ViewBag.DeliveryPrice = deliveryPrice;
+        ViewBag.FinalTotal = finalTotal;
+
+        ViewBag.OrderTypeName = orderTypeName;
+        ViewBag.DeliveryMethodName = deliveryMethodName;
+
+        ViewBag.PreparationResult = preparationResult;
+        ViewBag.DeliveryResult = deliveryResult;
+
+        ViewBag.WasCalculated = wasCalculated;
+
+        ViewBag.BridgeInfo =
+            "Bridge separa tipul comenzii de metoda de livrare. Tipul comenzii si metoda de livrare pot varia independent.";
     }
 
     private static List<ProductViewModel> BuildProductCards(List<StoreProduct> products)

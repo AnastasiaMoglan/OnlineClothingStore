@@ -889,6 +889,55 @@ main {
     border-left: 7px solid #16a34a;
 }
 
+.checkout-products {
+    margin: 35px 55px 0;
+    background: white;
+    border-radius: 26px;
+    padding: 28px;
+    box-shadow: 0 12px 30px rgba(15, 61, 117, 0.08);
+}
+
+.checkout-products h2 {
+    margin: 0 0 18px;
+    color: #0f172a;
+}
+
+.checkout-product-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.checkout-product-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 16px 18px;
+    border-radius: 18px;
+    background: #f8fbff;
+    border: 1px solid #dbeafe;
+}
+
+.checkout-product-line div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.checkout-product-line strong,
+.checkout-product-line b {
+    color: #243f7a;
+}
+
+.checkout-product-line span {
+    color: #64748b;
+}
+
+.checkout-delivery {
+    margin-top: 0;
+}
+
 /* ============================= */
 /* FOOTER */
 /* ============================= */
@@ -965,6 +1014,7 @@ footer {
     .product-grid,
     .cart-list,
     .cart-summary,
+    .checkout-products,
     .style-editor-grid,
     .empty-state,
     .admin-panel,
@@ -995,6 +1045,11 @@ footer {
     .product-grid,
     .style-editor-grid {
         grid-template-columns: 1fr;
+    }
+
+    .checkout-product-line {
+        align-items: flex-start;
+        flex-direction: column;
     }
 
     .shop-hero h1,
@@ -1243,5 +1298,173 @@ footer {
 
     .decorator-hero h1 {
         font-size: 32px;
+    }
+}
+.bridge-page {
+    padding: 30px 40px 50px;
+    background: linear-gradient(135deg, #eaf4ff, #ffffff);
+    min-height: 100vh;
+}
+
+.bridge-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+}
+
+.bridge-form,
+.bridge-result {
+    background: #ffffff;
+    border-radius: 28px;
+    padding: 30px;
+    box-shadow: 0 15px 40px rgba(0, 75, 140, 0.10);
+}
+
+.bridge-form h2,
+.bridge-result h2 {
+    color: #0b3d70;
+    margin-bottom: 18px;
+}
+
+.bridge-small-info {
+    color: #49647d;
+    line-height: 1.6;
+    margin-bottom: 22px;
+    background: #f1f8ff;
+    padding: 15px 18px;
+    border-radius: 16px;
+}
+
+.bridge-options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin: 22px 0;
+}
+
+.bridge-option-box {
+    background: #f1f8ff;
+    border-radius: 20px;
+    padding: 20px;
+}
+
+.bridge-option-box h3 {
+    color: #0b3d70;
+    margin-bottom: 15px;
+}
+
+.bridge-radio-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: #ffffff;
+    padding: 14px 15px;
+    border-radius: 14px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    color: #244b6e;
+    border: 1px solid #d9eaf8;
+}
+
+.bridge-radio-item input {
+    margin-top: 4px;
+    width: 17px;
+    height: 17px;
+}
+
+.bridge-radio-item span {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.bridge-radio-item strong {
+    color: #0b3d70;
+}
+
+.bridge-radio-item small {
+    color: #6a8197;
+}
+
+.bridge-btn {
+    width: 100%;
+    border: none;
+    border-radius: 18px;
+    padding: 15px;
+    background: linear-gradient(135deg, #0b74d1, #42a5f5);
+    color: white;
+    font-size: 17px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.25s;
+}
+
+.bridge-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(0, 105, 190, 0.25);
+}
+
+.bridge-summary {
+    display: grid;
+    gap: 12px;
+    margin: 20px 0 25px;
+}
+
+.bridge-summary div {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    background: linear-gradient(135deg, #f7fbff, #eaf4ff);
+    border: 1px solid #cfe3f5;
+    border-radius: 16px;
+    padding: 15px;
+    color: #244b6e;
+}
+
+.bridge-summary span {
+    font-weight: 700;
+}
+
+.bridge-summary strong {
+    color: #0b3d70;
+}
+
+.bridge-summary .bridge-total {
+    background: linear-gradient(135deg, #0b74d1, #42a5f5);
+    color: white;
+    border: none;
+}
+
+.bridge-summary .bridge-total strong {
+    color: white;
+    font-size: 20px;
+}
+
+.bridge-message-box {
+    background: #f8fbff;
+    border: 1px solid #cfe3f5;
+    border-radius: 18px;
+    padding: 18px;
+    margin-bottom: 15px;
+}
+
+.bridge-message-box h3 {
+    color: #0b3d70;
+    margin-bottom: 8px;
+}
+
+.bridge-message-box p {
+    color: #49647d;
+    line-height: 1.6;
+}
+
+@media (max-width: 1000px) {
+    .bridge-layout,
+    .bridge-options-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .bridge-page {
+        padding: 20px;
     }
 }

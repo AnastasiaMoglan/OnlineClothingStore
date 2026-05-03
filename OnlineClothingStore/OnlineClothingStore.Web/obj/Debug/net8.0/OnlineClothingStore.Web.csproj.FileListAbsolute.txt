@@ -29,3 +29,9 @@ C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore
 C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.Web\obj\Debug\net8.0\OnlineCl.2C68881A.Up2Date
 C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.Web\obj\Debug\net8.0\OnlineClothingStore.Web.genruntimeconfig.cache
 C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.Web\obj\Debug\net8.0\ref\OnlineClothingStore.Web.dll
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\build-check\OnlineClothingStore.Web.staticwebassets.runtime.json
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\build-check\OnlineClothingStore.Web.exe
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\build-check\OnlineClothingStore.Web.deps.json
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\build-check\OnlineClothingStore.Web.runtimeconfig.json
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\build-check\OnlineClothingStore.Web.dll
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\build-check\OnlineClothingStore.Web.pdb

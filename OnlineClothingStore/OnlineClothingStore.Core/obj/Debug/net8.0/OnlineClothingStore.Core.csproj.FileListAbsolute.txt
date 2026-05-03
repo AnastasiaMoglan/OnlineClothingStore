@@ -10,3 +10,6 @@ C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore
 C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.Core\obj\Debug\net8.0\refint\OnlineClothingStore.Core.dll
 C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.Core\obj\Debug\net8.0\OnlineClothingStore.Core.pdb
 C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.Core\obj\Debug\net8.0\ref\OnlineClothingStore.Core.dll
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\build-check\OnlineClothingStore.Core.deps.json
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\build-check\OnlineClothingStore.Core.dll
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\build-check\OnlineClothingStore.Core.pdb

@@ -1,28 +1,197 @@
-﻿@{
+@{
     ViewData["Title"] = "Checkout";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var cart = ViewBag.Cart;
+
+    bool wasCalculated = ViewBag.WasCalculated == true;
+    string orderType = ViewBag.OrderType as string ?? "standard";
+    string deliveryMethod = ViewBag.DeliveryMethod as string ?? "courier";
+
+    decimal productsTotal = ViewBag.ProductsTotal ?? 0;
+    decimal servicePrice = ViewBag.ServicePrice ?? 0;
+    decimal deliveryPrice = ViewBag.DeliveryPrice ?? 0;
+    decimal finalTotal = ViewBag.FinalTotal ?? productsTotal;
 }
 
 <section class="shop-hero">
     <div>
         <span class="hero-kicker">Checkout</span>
-        <h1>Finalizare comanda</h1>
-        <p>Pagina simpla pentru finalizarea comenzii.</p>
+        <h1>Finalizare comandă</h1>
+        <p>Aici verifici hainele alese, apoi selectezi tipul comenzii și metoda de livrare.</p>
     </div>
 
-    <a href="/Store/Cart" class="btn secondary">Inapoi la cos</a>
+    <a asp-controller="Store" asp-action="Cart" class="btn secondary">Înapoi la coș</a>
 </section>
 
-<section class="checkout-layout">
-    <div class="checkout-card">
-        <h2>Rezumat comanda</h2>
-        <p>Total: <b>@ViewBag.Total MDL</b></p>
-        <p>Comanda poate fi procesata dupa confirmare.</p>
-    </div>
+@if (cart.Count == 0)
+{
+    <section class="empty-state">
+        <h2>Coșul este gol</h2>
+        <p>Adaugă produse din catalog înainte de checkout.</p>
+        <a asp-controller="Store" asp-action="Catalog" class="btn primary">Mergi la catalog</a>
+    </section>
+}
+else
+{
+    <section class="checkout-products">
+        <h2>Produsele alese</h2>
 
-    <div class="checkout-card success">
-        <h2>Confirmare</h2>
-        <p>Comanda a fost pregatita pentru procesare.</p>
-        <a href="/Store/Catalog" class="btn primary">Inapoi la catalog</a>
-    </div>
-</section>
+        <div class="checkout-product-list">
+            @foreach (var item in cart)
+            {
+                <div class="checkout-product-line">
+                    <div>
+                        <strong>@item.Product.Name</strong>
+                        <span>@item.Product.Category | @item.Product.Color | Mărime @item.Product.Size</span>
+                    </div>
+
+                    <b>@item.Quantity x @item.Product.Price MDL</b>
+                </div>
+            }
+        </div>
+    </section>
+
+    <section class="bridge-page checkout-delivery">
+        <div class="bridge-layout">
+            <form asp-controller="Store" asp-action="Checkout" method="post" class="bridge-form">
+                <h2>Detalii livrare</h2>
+
+                <p class="bridge-small-info">
+                    După ce ai ales hainele, completează datele și selectează cum vrei să fie procesată comanda.
+                </p>
+
+                <div class="form-group">
+                    <label>Nume client</label>
+                    <input type="text" name="customerName" value="@ViewBag.CustomerName" />
+                </div>
+
+                <div class="form-group">
+                    <label>Adresă / locație livrare</label>
+                    <input type="text" name="address" value="@ViewBag.Address" />
+                </div>
+
+                <div class="bridge-options-grid">
+                    <div class="bridge-option-box">
+                        <h3>Tipul comenzii</h3>
+
+                        <label class="bridge-radio-item">
+                            <input type="radio" name="orderType" value="standard" @(orderType == "standard" ? "checked" : "") />
+                            <span>
+                                <strong>Comandă standard</strong>
+                                <small>Fără cost suplimentar</small>
+                            </span>
+                        </label>
+
+                        <label class="bridge-radio-item">
+                            <input type="radio" name="orderType" value="express" @(orderType == "express" ? "checked" : "") />
+                            <span>
+                                <strong>Comandă expres</strong>
+                                <small>Procesare rapidă: +80 MDL</small>
+                            </span>
+                        </label>
+
+                        <label class="bridge-radio-item">
+                            <input type="radio" name="orderType" value="gift" @(orderType == "gift" ? "checked" : "") />
+                            <span>
+                                <strong>Comandă cadou</strong>
+                                <small>Ambalaj special: +120 MDL</small>
+                            </span>
+                        </label>
+                    </div>
+
+                    <div class="bridge-option-box">
+                        <h3>Metoda de livrare</h3>
+
+                        <label class="bridge-radio-item">
+                            <input type="radio" name="deliveryMethod" value="courier" @(deliveryMethod == "courier" ? "checked" : "") />
+                            <span>
+                                <strong>Curier</strong>
+                                <small>Livrare la adresă: +70 MDL</small>
+                            </span>
+                        </label>
+
+                        <label class="bridge-radio-item">
+                            <input type="radio" name="deliveryMethod" value="pickup" @(deliveryMethod == "pickup" ? "checked" : "") />
+                            <span>
+                                <strong>Ridicare din magazin</strong>
+                                <small>Fără cost suplimentar</small>
+                            </span>
+                        </label>
+
+                        <label class="bridge-radio-item">
+                            <input type="radio" name="deliveryMethod" value="locker" @(deliveryMethod == "locker" ? "checked" : "") />
+                            <span>
+                                <strong>Locker</strong>
+                                <small>Livrare la locker: +45 MDL</small>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="bridge-btn">
+                    Calculează și confirmă comanda
+                </button>
+            </form>
+
+            <div class="bridge-result">
+                <h2>Rezumat comandă</h2>
+
+                <div class="bridge-summary">
+                    <div>
+                        <span>Total produse</span>
+                        <strong>@productsTotal MDL</strong>
+                    </div>
+
+                    <div>
+                        <span>Cost serviciu</span>
+                        <strong>@servicePrice MDL</strong>
+                    </div>
+
+                    <div>
+                        <span>Cost livrare</span>
+                        <strong>@deliveryPrice MDL</strong>
+                    </div>
+
+                    <div class="bridge-total">
+                        <span>Total final</span>
+                        <strong>@finalTotal MDL</strong>
+                    </div>
+                </div>
+
+                @if (wasCalculated)
+                {
+                    <div class="success-box">
+                        Comanda a fost configurată cu succes.
+                    </div>
+
+                    <div class="bridge-message-box">
+                        <h3>Tip comandă</h3>
+                        <p>@ViewBag.OrderTypeName</p>
+                    </div>
+
+                    <div class="bridge-message-box">
+                        <h3>Metodă livrare</h3>
+                        <p>@ViewBag.DeliveryMethodName</p>
+                    </div>
+
+                    <div class="bridge-message-box">
+                        <h3>Pregătire comandă</h3>
+                        <p>@ViewBag.PreparationResult</p>
+                    </div>
+
+                    <div class="bridge-message-box">
+                        <h3>Livrare</h3>
+                        <p>@ViewBag.DeliveryResult</p>
+                    </div>
+                }
+                else
+                {
+                    <p class="empty-result">
+                        Selectează tipul comenzii și metoda de livrare, apoi apasă pe buton pentru totalul final.
+                    </p>
+                }
+            </div>
+        </div>
+    </section>
+}
