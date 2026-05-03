@@ -1,0 +1,68 @@
+﻿@startuml
+title Command Pattern - Shopping Cart Actions
+
+class CartItem {
+    +ProductId: int
+    +ProductName: string
+    +Price: decimal
+    +Quantity: int
+}
+
+class ShoppingCart {
+    -items: List<CartItem>
+    +AddItem(item: CartItem): void
+    +RemoveItem(productId: int): CartItem?
+    +Clear(): List<CartItem>
+    +RestoreItems(items: List<CartItem>): void
+    +GetItems(): IReadOnlyList<CartItem>
+    +GetTotal(): decimal
+}
+
+interface ICartCommand {
+    +Execute(): void
+    +Undo(): void
+    +Description: string
+}
+
+class AddToCartCommand {
+    -cart: ShoppingCart
+    -item: CartItem
+    +Execute(): void
+    +Undo(): void
+    +Description: string
+}
+
+class RemoveFromCartCommand {
+    -cart: ShoppingCart
+    -productId: int
+    -removedItem: CartItem
+    +Execute(): void
+    +Undo(): void
+    +Description: string
+}
+
+class ClearCartCommand {
+    -cart: ShoppingCart
+    -backupItems: List<CartItem>
+    +Execute(): void
+    +Undo(): void
+    +Description: string
+}
+
+class CartCommandInvoker {
+    -history: Stack<ICartCommand>
+    +ExecuteCommand(command: ICartCommand): void
+    +UndoLastCommand(): void
+}
+
+ICartCommand <|.. AddToCartCommand
+ICartCommand <|.. RemoveFromCartCommand
+ICartCommand <|.. ClearCartCommand
+
+AddToCartCommand --> ShoppingCart
+RemoveFromCartCommand --> ShoppingCart
+ClearCartCommand --> ShoppingCart
+CartCommandInvoker --> ICartCommand
+ShoppingCart --> CartItem
+
+@enduml

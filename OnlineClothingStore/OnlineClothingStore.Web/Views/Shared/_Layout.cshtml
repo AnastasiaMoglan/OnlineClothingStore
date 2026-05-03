@@ -1,0 +1,38 @@
+﻿<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"] - Online Clothing Store</title>
+    <link rel="stylesheet" href="~/css/store.css" />
+</head>
+<body>
+
+<header class="topbar">
+    <div class="logo">
+        <a href="/Store/Index">BlueWear</a>
+    </div>
+
+    <nav>
+        <a href="/Store/Index">Home</a>
+        <a href="/Store/Catalog">Catalog</a>
+        <a href="/Store/Cart">Coș</a>
+        <a href="/Store/Admin">Admin</a>
+    </nav>
+
+    <div class="auth">
+        <a href="/Store/Login?role=Customer">Login Client</a>
+        <a href="/Store/Login?role=Manager" class="manager">Login Manager</a>
+        <a href="/Store/Logout">Logout</a>
+    </div>
+</header>
+
+<main>
+    @RenderBody()
+</main>
+
+<footer>
+    <p>© 2026 BlueWear Online Clothing Store | TMPPP / OOP</p>
+</footer>
+
+</body>
+</html>

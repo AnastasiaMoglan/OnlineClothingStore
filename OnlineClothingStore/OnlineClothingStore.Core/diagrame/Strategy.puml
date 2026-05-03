@@ -1,0 +1,43 @@
+﻿@startuml
+title Strategy Pattern - Discount System for Online Clothing Store
+
+interface IDiscountStrategy {
+    +ApplyDiscount(price: decimal): decimal
+    +GetDescription(): string
+}
+
+class NoDiscountStrategy {
+    +ApplyDiscount(price: decimal): decimal
+    +GetDescription(): string
+}
+
+class VipDiscountStrategy {
+    -discountPercent: decimal
+    +VipDiscountStrategy(discountPercent: decimal)
+    +ApplyDiscount(price: decimal): decimal
+    +GetDescription(): string
+}
+
+class SeasonalDiscountStrategy {
+    -discountPercent: decimal
+    -seasonName: string
+    +SeasonalDiscountStrategy(discountPercent: decimal, seasonName: string)
+    +ApplyDiscount(price: decimal): decimal
+    +GetDescription(): string
+}
+
+class ProductPriceCalculator {
+    -discountStrategy: IDiscountStrategy
+    +ProductPriceCalculator(discountStrategy: IDiscountStrategy)
+    +SetDiscountStrategy(strategy: IDiscountStrategy): void
+    +CalculateFinalPrice(price: decimal): decimal
+    +GetDiscountInfo(): string
+}
+
+IDiscountStrategy <|.. NoDiscountStrategy
+IDiscountStrategy <|.. VipDiscountStrategy
+IDiscountStrategy <|.. SeasonalDiscountStrategy
+
+ProductPriceCalculator --> IDiscountStrategy
+
+@enduml

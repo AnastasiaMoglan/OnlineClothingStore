@@ -103,3 +103,4 @@ C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore
 C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.Tests\bin\Debug\net8.0\OnlineClothingStore.Core.exe
 C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.Tests\bin\Debug\net8.0\OnlineClothingStore.Core.dll
 C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.Tests\bin\Debug\net8.0\OnlineClothingStore.Core.pdb
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.Tests\obj\Debug\net8.0\OnlineClothingStore.Tests.sourcelink.json

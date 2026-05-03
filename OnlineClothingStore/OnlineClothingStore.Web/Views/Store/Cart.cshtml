@@ -1,0 +1,40 @@
+﻿@{
+    ViewData["Title"] = "Coș";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var cart = ViewBag.Cart;
+}
+
+<section class="page-header">
+    <h1>Coșul meu</h1>
+    <p>Produsele selectate pentru comandă.</p>
+</section>
+
+<section class="cart-box">
+    @if (cart.Count == 0)
+    {
+        <p>Coșul este gol.</p>
+        <a href="/Store/Catalog" class="btn primary">Mergi la catalog</a>
+    }
+    else
+    {
+        @foreach (var item in cart)
+        {
+            <div class="cart-line">
+                <div>
+                    <h3>@item.Product.Name</h3>
+                    <p>@item.Product.Category | @item.Product.Color | Mărime @item.Product.Size</p>
+                </div>
+
+                <div>
+                    <b>@item.Quantity x @item.Product.Price MDL</b>
+                </div>
+            </div>
+        }
+
+        <div class="cart-total">
+            Total: <b>@ViewBag.Total MDL</b>
+        </div>
+
+        <a href="/Store/Checkout" class="btn primary">Finalizează comanda</a>
+    }
+</section>

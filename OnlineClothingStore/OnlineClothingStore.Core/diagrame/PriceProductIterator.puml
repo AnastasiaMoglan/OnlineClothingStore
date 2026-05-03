@@ -1,0 +1,70 @@
+﻿@startuml
+title Iterator Pattern - Product Catalog Traversal
+
+class Product {
+    +Id: int
+    +Name: string
+    +Category: string
+    +Price: decimal
+    +Size: string
+}
+
+interface IProductIterator {
+    +HasNext(): bool
+    +Next(): Product
+    +Reset(): void
+}
+
+interface IProductCollection {
+    +CreateIterator(): IProductIterator
+    +CreateCategoryIterator(category: string): IProductIterator
+    +CreatePriceIterator(maxPrice: decimal): IProductIterator
+}
+
+class ProductCatalog {
+    -products: List<Product>
+    +AddProduct(product: Product): void
+    +CreateIterator(): IProductIterator
+    +CreateCategoryIterator(category: string): IProductIterator
+    +CreatePriceIterator(maxPrice: decimal): IProductIterator
+}
+
+class AllProductsIterator {
+    -products: IList<Product>
+    -position: int
+    +HasNext(): bool
+    +Next(): Product
+    +Reset(): void
+}
+
+class CategoryProductIterator {
+    -products: IList<Product>
+    -category: string
+    -position: int
+    +HasNext(): bool
+    +Next(): Product
+    +Reset(): void
+}
+
+class PriceProductIterator {
+    -products: IList<Product>
+    -maxPrice: decimal
+    -position: int
+    +HasNext(): bool
+    +Next(): Product
+    +Reset(): void
+}
+
+IProductIterator <|.. AllProductsIterator
+IProductIterator <|.. CategoryProductIterator
+IProductIterator <|.. PriceProductIterator
+
+IProductCollection <|.. ProductCatalog
+
+ProductCatalog --> Product
+ProductCatalog --> IProductIterator
+AllProductsIterator --> Product
+CategoryProductIterator --> Product
+PriceProductIterator --> Product
+
+@enduml

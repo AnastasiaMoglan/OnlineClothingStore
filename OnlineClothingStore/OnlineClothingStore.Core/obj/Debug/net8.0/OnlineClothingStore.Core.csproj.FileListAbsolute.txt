@@ -12,3 +12,13 @@ C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore
 C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.Core\obj\Debug\net8.0\OnlineClothingStore.Core.pdb
 C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.Core\obj\Debug\net8.0\OnlineClothingStore.Core.genruntimeconfig.cache
 C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.Core\obj\Debug\net8.0\ref\OnlineClothingStore.Core.dll
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.Core\obj\Debug\net8.0\OnlineClothingStore.Core.sourcelink.json
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.Core\obj\Debug\net8.0\OnlineClothingStore.Core.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.Core\obj\Debug\net8.0\staticwebassets.build.json
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.Core\obj\Debug\net8.0\staticwebassets.development.json
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.Core\obj\Debug\net8.0\staticwebassets\msbuild.OnlineClothingStore.Core.Microsoft.AspNetCore.StaticWebAssets.props
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.Core\obj\Debug\net8.0\staticwebassets\msbuild.build.OnlineClothingStore.Core.props
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.Core\obj\Debug\net8.0\staticwebassets\msbuild.buildMultiTargeting.OnlineClothingStore.Core.props
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.Core\obj\Debug\net8.0\staticwebassets\msbuild.buildTransitive.OnlineClothingStore.Core.props
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.Core\obj\Debug\net8.0\staticwebassets.pack.json
+C:\Users\anast\OneDrive\Desktop\TMPPPlab\OnlineClothingStore\OnlineClothingStore.Core\obj\Debug\net8.0\scopedcss\bundle\OnlineClothingStore.Core.styles.css

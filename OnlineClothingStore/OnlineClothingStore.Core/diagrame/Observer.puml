@@ -1,0 +1,48 @@
+﻿@startuml
+title Observer Pattern - Order Notification System
+
+class OrderEvent {
+    +OrderId: string
+    +CustomerEmail: string
+    +TotalAmount: decimal
+    +CreatedAt: DateTime
+}
+
+interface IOrderObserver {
+    +Update(orderEvent: OrderEvent): void
+}
+
+class OrderSubject {
+    -observers: List<IOrderObserver>
+    +Subscribe(observer: IOrderObserver): void
+    +Unsubscribe(observer: IOrderObserver): void
+    +Notify(orderEvent: OrderEvent): void
+    +PlaceOrder(customerEmail: string, totalAmount: decimal): OrderEvent
+}
+
+class CustomerNotificationObserver {
+    +Update(orderEvent: OrderEvent): void
+}
+
+class StockUpdateObserver {
+    +Update(orderEvent: OrderEvent): void
+}
+
+class AdminNotificationObserver {
+    +Update(orderEvent: OrderEvent): void
+}
+
+class AuditLogObserver {
+    +Update(orderEvent: OrderEvent): void
+}
+
+IOrderObserver <|.. CustomerNotificationObserver
+IOrderObserver <|.. StockUpdateObserver
+IOrderObserver <|.. AdminNotificationObserver
+IOrderObserver <|.. AuditLogObserver
+
+OrderSubject --> IOrderObserver
+OrderSubject --> OrderEvent
+IOrderObserver --> OrderEvent
+
+@enduml

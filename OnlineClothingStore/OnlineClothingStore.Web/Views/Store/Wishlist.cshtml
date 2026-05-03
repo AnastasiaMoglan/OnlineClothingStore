@@ -1,0 +1,43 @@
+﻿@{
+    ViewData["Title"] = "Wishlist";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var wishlist = ViewBag.Wishlist;
+}
+
+<section class="page-header">
+    <h1>Wishlist</h1>
+    <p>Produsele salvate pentru cumpărare ulterioară.</p>
+</section>
+
+<section class="product-grid">
+    @if (wishlist.Count == 0)
+    {
+        <div class="empty-cart">
+            <h2>Wishlist-ul este gol</h2>
+            <p>Adaugă produse favorite din catalog.</p>
+            <a href="/Store/Catalog" class="btn primary">Mergi la catalog</a>
+        </div>
+    }
+    else
+    {
+        @foreach (var product in wishlist)
+        {
+            <div class="product-card">
+                <img src="@product.Image" alt="@product.Name" class="product-photo" />
+
+                <div class="product-content">
+                    <span class="category-label">@product.Category</span>
+                    <h3>@product.Name</h3>
+                    <p>@product.Color | Mărime @product.Size</p>
+                    <strong>@product.Price MDL</strong>
+
+                    <div class="card-actions">
+                        <a href="/Store/Product/@product.Id">Detalii</a>
+                        <a href="/Store/AddToCart/@product.Id">În coș</a>
+                        <a href="/Store/RemoveFromWishlist/@product.Id" class="light-action">Șterge</a>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</section>

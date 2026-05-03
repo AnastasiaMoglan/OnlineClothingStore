@@ -1,0 +1,39 @@
+﻿@startuml
+title Memento Pattern - Shopping Cart Snapshot
+
+class CartItem {
+    +ProductId: int
+    +ProductName: string
+    +Price: decimal
+    +Quantity: int
+    +Clone(): CartItem
+}
+
+class CartSnapshot {
+    +Items: IReadOnlyList<CartItem>
+    +SavedAt: DateTime
+    +GetDescription(): string
+}
+
+class CartOriginator {
+    -items: List<CartItem>
+    +AddItem(item: CartItem): void
+    +RemoveItem(productId: int): void
+    +Save(): CartSnapshot
+    +Restore(snapshot: CartSnapshot): void
+    +GetItems(): IReadOnlyList<CartItem>
+    +GetTotal(): decimal
+}
+
+class CartHistory {
+    -undoStack: Stack<CartSnapshot>
+    +SaveState(cart: CartOriginator): void
+    +RestoreLastState(cart: CartOriginator): void
+}
+
+CartOriginator --> CartSnapshot
+CartSnapshot --> CartItem
+CartHistory --> CartSnapshot
+CartHistory --> CartOriginator
+
+@enduml

@@ -1,0 +1,55 @@
+﻿@{
+    ViewData["Title"] = "Home";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var featured = ViewBag.FeaturedProducts;
+}
+
+<section class="hero">
+    <div class="hero-text">
+        <span class="tag">New Collection 2026</span>
+        <h1>Haine moderne pentru orice stil</h1>
+        <p>
+            Descoperă colecția noastră de tricouri, jeans, geci, rochii și încălțăminte.
+            Magazin online simplu, rapid și comod.
+        </p>
+
+        <div class="hero-buttons">
+            <a href="/Store/Catalog" class="btn primary">Vezi catalogul</a>
+            <a href="/Store/Cart" class="btn secondary">Coșul meu</a>
+        </div>
+    </div>
+
+    <div class="hero-card">
+        <h3>Promoție activă</h3>
+        <pre>@ViewBag.Promotion</pre>
+
+        <div class="promo-switch">
+            <a href="/Store/Index?promoChannel=email">Email</a>
+            <a href="/Store/Index?promoChannel=mobile">Mobile App</a>
+            <a href="/Store/Index?promoChannel=display">Store Display</a>
+        </div>
+
+        <p class="pattern-note">@ViewBag.PatternInfo</p>
+    </div>
+</section>
+
+<section class="section">
+    <h2>Produse recomandate</h2>
+
+    <div class="product-grid">
+        @foreach (var product in featured)
+        {
+            <div class="product-card">
+                <div class="product-img">@product.Category</div>
+                <h3>@product.Name</h3>
+                <p>@product.Color | Mărime @product.Size</p>
+                <strong>@product.Price MDL</strong>
+
+                <div class="card-actions">
+                    <a href="/Store/Product/@product.Id">Detalii</a>
+                    <a href="/Store/AddToCart/@product.Id">Adaugă în coș</a>
+                </div>
+            </div>
+        }
+    </div>
+</section>

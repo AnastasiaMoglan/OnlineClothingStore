@@ -1,0 +1,38 @@
+﻿@{
+    ViewData["Title"] = "Admin";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="page-header">
+    <h1>Admin Panel</h1>
+    <p>Acces intern pentru angajații magazinului.</p>
+</section>
+
+<section class="admin-panel">
+    <div class="admin-card">
+        <h2>Utilizator curent</h2>
+        <p>Rol: <b>@ViewBag.Role</b></p>
+
+        <div class="checkout-actions">
+            <a href="/Store/Login?role=Customer">Intră ca Customer</a>
+            <a href="/Store/Login?role=Cashier">Intră ca Cashier</a>
+            <a href="/Store/Login?role=Manager">Intră ca Manager</a>
+        </div>
+    </div>
+
+    <div class="admin-card">
+        <h2>Supplier Prices</h2>
+        <p>Prețurile reale de la furnizor sunt date sensibile.</p>
+
+        <form method="get" action="/Store/Admin">
+            <input name="sku" value="TSHIRT-001" />
+            <button type="submit">Verifică preț furnizor</button>
+        </form>
+
+        <div class="supplier-result @(ViewBag.Access == true ? "allowed" : "denied")">
+            @ViewBag.SupplierResult
+        </div>
+
+        <p class="pattern-note">@ViewBag.ProxyInfo</p>
+    </div>
+</section>

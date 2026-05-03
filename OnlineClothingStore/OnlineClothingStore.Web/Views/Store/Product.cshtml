@@ -1,0 +1,24 @@
+﻿@{
+    ViewData["Title"] = "Detalii produs";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var product = ViewBag.Product;
+}
+
+<section class="product-details">
+    <div class="big-product-img">
+        @product.Category
+    </div>
+
+    <div class="details-info">
+        <span class="tag">@product.Category</span>
+        <h1>@product.Name</h1>
+
+        <p>Culoare: <b>@product.Color</b></p>
+        <p>Mărime disponibilă: <b>@product.Size</b></p>
+
+        <h2>@product.Price MDL</h2>
+
+        <a href="/Store/AddToCart/@product.Id" class="btn primary">Adaugă în coș</a>
+        <a href="/Store/Catalog" class="btn secondary">Înapoi la catalog</a>
+    </div>
+</section>
