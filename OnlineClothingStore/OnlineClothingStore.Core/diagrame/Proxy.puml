@@ -1,28 +1,55 @@
 ﻿@startuml
 skinparam classAttributeIconSize 0
-left to right direction
-
-interface ISubject {
-  +Request(): string
+skinparam shadowing false
+skinparam class {
+    BackgroundColor #F8FBFF
+    BorderColor #1F5F99
+    ArrowColor #1F5F99
 }
 
-class RealSubject {
-  +Request(): string
+title Proxy Pattern - BlueWear Inventory Access Control
+
+class InventoryReportItem {
+    + ProductName : string
+    + Category : string
+    + SellingPrice : decimal
+    + StockQuantity : int
+    + SupplierName : string
+    + PurchasePrice : decimal
+    + EstimatedProfit : decimal
+    + IsSensitiveDataVisible : bool
 }
 
-class Proxy {
-  -_realSubject: ISubject
-  +Proxy(realSubject: ISubject)
-  +Request(): string
+interface IInventoryReport {
+    + GetReport(userRole : string) : List<InventoryReportItem>
+    + GetAccessMessage(userRole : string) : string
 }
 
-class Client {
-  +Execute(subject: ISubject): void
+class RealInventoryReport {
+    - items : List<InventoryReportItem>
+    + GetReport(userRole : string) : List<InventoryReportItem>
+    + GetAccessMessage(userRole : string) : string
 }
 
-ISubject <|.. RealSubject
-ISubject <|.. Proxy
+class InventoryReportProxy {
+    - realInventoryReport : RealInventoryReport
+    + GetReport(userRole : string) : List<InventoryReportItem>
+    + GetAccessMessage(userRole : string) : string
+}
 
-Proxy --> ISubject
-Client --> ISubject
+class StoreController {
+    + Inventory() : IActionResult
+}
+
+IInventoryReport <|.. RealInventoryReport
+IInventoryReport <|.. InventoryReportProxy
+
+InventoryReportProxy o-- RealInventoryReport : controls access to
+
+RealInventoryReport --> InventoryReportItem : creates full report
+InventoryReportProxy --> InventoryReportItem : returns filtered report
+
+StoreController ..> IInventoryReport : uses
+StoreController ..> InventoryReportProxy : creates proxy
+
 @enduml

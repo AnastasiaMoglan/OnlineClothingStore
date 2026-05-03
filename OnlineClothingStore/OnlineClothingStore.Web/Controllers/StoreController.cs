@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using OnlineClothingStore.App.Structural.Bridge;
 using OnlineClothingStore.App.Structural.Decorator;
 using OnlineClothingStore.App.Structural.Flyweight;
+using OnlineClothingStore.App.Structural.Proxy;
 using OnlineClothingStore.Web.Models;
 
 namespace OnlineClothingStore.Web.Controllers;
@@ -14,15 +15,15 @@ public class StoreController : Controller
 {
     private static readonly List<StoreProduct> Products = new()
     {
-        new StoreProduct(1, "Tricou Oversize Blue", "T-Shirts", 349, "M", "Albastru"),
-        new StoreProduct(2, "Tricou Basic White", "T-Shirts", 279, "S", "Alb"),
-        new StoreProduct(3, "Jeans Slim Fit", "Jeans", 699, "L", "Denim"),
-        new StoreProduct(4, "Jeans Regular Dark", "Jeans", 749, "M", "Albastru inchis"),
-        new StoreProduct(5, "Geaca Urban Denim", "Jackets", 1199, "M", "Albastru"),
-        new StoreProduct(6, "Hanorac Minimal", "Hoodies", 599, "XL", "Gri"),
-        new StoreProduct(7, "Hanorac Street Purple", "Hoodies", 649, "L", "Mov"),
-        new StoreProduct(8, "Rochie Eleganta", "Dresses", 899, "S", "Bleumarin"),
-        new StoreProduct(9, "Sneakers White", "Shoes", 999, "42", "Alb")
+        new StoreProduct(1, "Tricou Oversize Blue", "T-Shirts", 349, "M", "Albastru", 25),
+        new StoreProduct(2, "Tricou Basic White", "T-Shirts", 279, "S", "Alb", 40),
+        new StoreProduct(3, "Jeans Slim Fit", "Jeans", 699, "L", "Denim", 18),
+        new StoreProduct(4, "Jeans Regular Dark", "Jeans", 749, "M", "Albastru inchis", 14),
+        new StoreProduct(5, "Geaca Urban Denim", "Jackets", 1199, "M", "Albastru", 9),
+        new StoreProduct(6, "Hanorac Minimal", "Hoodies", 599, "XL", "Gri", 30),
+        new StoreProduct(7, "Hanorac Street Purple", "Hoodies", 649, "L", "Mov", 16),
+        new StoreProduct(8, "Rochie Eleganta", "Dresses", 899, "S", "Bleumarin", 11),
+        new StoreProduct(9, "Sneakers White", "Shoes", 999, "42", "Alb", 20)
     };
 
     private static readonly List<CartLine> ShoppingCart = new();
@@ -134,6 +135,7 @@ public class StoreController : Controller
 
         ViewBag.Role = role;
         ViewBag.CategoryStyles = GetCategoryStyles();
+        ViewBag.Products = Products;
         ViewBag.FlyweightAdminInfo =
             "Adminul modifica un singur stil partajat pentru o categorie. Toate produsele din acea categorie vor folosi noul stil.";
 
@@ -162,11 +164,31 @@ public class StoreController : Controller
         return RedirectToAction(nameof(Catalog));
     }
 
+    [HttpPost]
+    public IActionResult UpdateProductStock(int id, int stockQuantity)
+    {
+        string role = HttpContext.Session.GetString("role") ?? "Guest";
+
+        if (role != "Manager")
+        {
+            return RedirectToAction(nameof(AdminLogin));
+        }
+
+        StoreProduct? product = Products.FirstOrDefault(p => p.Id == id);
+
+        if (product != null)
+        {
+            product.StockQuantity = stockQuantity < 0 ? 0 : stockQuantity;
+        }
+
+        return RedirectToAction(nameof(Admin));
+    }
+
     public IActionResult AddToCart(int id)
     {
         StoreProduct? product = Products.FirstOrDefault(p => p.Id == id);
 
-        if (product != null)
+        if (product != null && product.StockQuantity > 0)
         {
             CartLine? existing = ShoppingCart.FirstOrDefault(c => c.Product.Id == id);
 
@@ -174,7 +196,7 @@ public class StoreController : Controller
             {
                 ShoppingCart.Add(new CartLine(product, 1));
             }
-            else
+            else if (existing.Quantity < product.StockQuantity)
             {
                 existing.Quantity++;
             }
@@ -199,7 +221,10 @@ public class StoreController : Controller
 
         if (line != null)
         {
-            line.Quantity++;
+            if (line.Quantity < line.Product.StockQuantity)
+            {
+                line.Quantity++;
+            }
         }
 
         return RedirectToAction(nameof(Cart));
@@ -634,6 +659,18 @@ public class StoreController : Controller
             "Bridge separa tipul comenzii de metoda de livrare. Tipul comenzii si metoda de livrare pot varia independent.";
     }
 
+    // ============================================================
+    // PROXY PATTERN
+    // Functionalitate adaugata fara a modifica Flyweight,
+    // Decorator sau Bridge.
+    // Demonstreaza controlul accesului la raportul de stocuri.
+    // ============================================================
+
+    public IActionResult Inventory()
+    {
+        return RedirectToAction(nameof(Admin));
+    }
+
     private static List<ProductViewModel> BuildProductCards(List<StoreProduct> products)
     {
         List<ProductViewModel> cards = new();
@@ -704,13 +741,16 @@ public class StoreController : Controller
 
         public string Color { get; }
 
+        public int StockQuantity { get; set; }
+
         public StoreProduct(
             int id,
             string name,
             string category,
             decimal price,
             string size,
-            string color)
+            string color,
+            int stockQuantity)
         {
             Id = id;
             Name = name;
@@ -718,6 +758,7 @@ public class StoreController : Controller
             Price = price;
             Size = size;
             Color = color;
+            StockQuantity = stockQuantity;
         }
     }
 

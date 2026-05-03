@@ -1,42 +1,85 @@
 ﻿@startuml
 skinparam classAttributeIconSize 0
-left to right direction
-
-interface IImplementation {
-  +OperationImplementation(): string
+skinparam shadowing false
+skinparam class {
+    BackgroundColor #F8FBFF
+    BorderColor #1F5F99
+    ArrowColor #1F5F99
 }
 
-class ConcreteImplementationA {
-  +OperationImplementation(): string
+title Bridge Pattern - BlueWear Delivery System
+
+interface IDeliveryMethod {
+    + Name : string
+    + DeliveryPrice : decimal
+    + Deliver(customerName : string, address : string) : string
 }
 
-class ConcreteImplementationB {
-  +OperationImplementation(): string
+class CourierDeliveryMethod {
+    + Name : string
+    + DeliveryPrice : decimal
+    + Deliver(customerName : string, address : string) : string
 }
 
-abstract class Abstraction {
-  #_implementation: IImplementation
-  +Abstraction(implementation: IImplementation)
-  +Operation(): string
+class PickupDeliveryMethod {
+    + Name : string
+    + DeliveryPrice : decimal
+    + Deliver(customerName : string, address : string) : string
 }
 
-class RefinedAbstractionA {
-  +Operation(): string
+class LockerDeliveryMethod {
+    + Name : string
+    + DeliveryPrice : decimal
+    + Deliver(customerName : string, address : string) : string
 }
 
-class RefinedAbstractionB {
-  +Operation(): string
+abstract class DeliveryOrder {
+    - deliveryMethod : IDeliveryMethod
+    + OrderType : string
+    + ServicePrice : decimal
+    + PrepareOrder() : string
+    + CalculateTotal(productsTotal : decimal) : decimal
+    + CompleteDelivery(customerName : string, address : string) : string
+    + GetDeliveryMethodName() : string
+    + GetDeliveryPrice() : decimal
 }
-class Client {
-  +Run(abstraction: Abstraction): void
+
+class StandardDeliveryOrder {
+    + OrderType : string
+    + ServicePrice : decimal
+    + PrepareOrder() : string
 }
 
-IImplementation <|.. ConcreteImplementationA
-IImplementation <|.. ConcreteImplementationB
+class ExpressDeliveryOrder {
+    + OrderType : string
+    + ServicePrice : decimal
+    + PrepareOrder() : string
+}
 
-Abstraction <|-- RefinedAbstractionA
-Abstraction <|-- RefinedAbstractionB
+class GiftDeliveryOrder {
+    + OrderType : string
+    + ServicePrice : decimal
+    + PrepareOrder() : string
+}
 
-Abstraction --> IImplementation
-Client --> Abstraction
+class StoreController {
+    + Delivery() : IActionResult
+    + Delivery(customerName, address, orderType, deliveryMethod) : IActionResult
+    - CreateDeliveryMethod(deliveryMethod : string) : IDeliveryMethod
+    - CreateDeliveryOrder(orderType : string, deliveryMethod : IDeliveryMethod) : DeliveryOrder
+}
+
+IDeliveryMethod <|.. CourierDeliveryMethod
+IDeliveryMethod <|.. PickupDeliveryMethod
+IDeliveryMethod <|.. LockerDeliveryMethod
+
+DeliveryOrder o-- IDeliveryMethod : uses
+
+DeliveryOrder <|-- StandardDeliveryOrder
+DeliveryOrder <|-- ExpressDeliveryOrder
+DeliveryOrder <|-- GiftDeliveryOrder
+
+StoreController ..> DeliveryOrder : creates
+StoreController ..> IDeliveryMethod : creates
+
 @enduml

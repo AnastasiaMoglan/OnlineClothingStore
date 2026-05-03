@@ -1,0 +1,120 @@
+﻿@using OnlineClothingStore.App.Structural.Proxy
+
+@{
+    ViewData["Title"] = "Stocuri";
+
+    List<InventoryReportItem> inventoryItems =
+        ViewBag.InventoryItems as List<InventoryReportItem> ?? new List<InventoryReportItem>();
+
+    bool isManager = ViewBag.IsManager == true;
+}
+
+<section class="proxy-page">
+
+    <div class="proxy-layout">
+
+        <div class="proxy-info-card">
+            <h2>Raport stocuri</h2>
+
+            <p>
+                Această pagină demonstrează șablonul Proxy prin controlul accesului
+                la datele administrative despre produse.
+            </p>
+
+            <div class="proxy-role-box">
+                <span>Rol curent:</span>
+                <strong>@ViewBag.Role</strong>
+            </div>
+
+            <div class="proxy-message">
+                @ViewBag.ProxyMessage
+            </div>
+
+            <div class="proxy-actions">
+                <a asp-controller="Store" asp-action="AdminLogin" class="proxy-btn">
+                    Login ca Manager
+                </a>
+
+                <a asp-controller="Store" asp-action="Logout" class="proxy-btn secondary">
+                    Logout
+                </a>
+            </div>
+
+            <div class="explanation-box">
+                <h3>Explicație Proxy</h3>
+                <p>
+                    Controllerul nu accesează direct raportul real de stocuri.
+                    El lucrează cu interfața <strong>IInventoryReport</strong>,
+                    iar obiectul folosit este <strong>InventoryReportProxy</strong>.
+                </p>
+
+                <p>
+                    Proxy verifică rolul utilizatorului. Dacă rolul este Manager,
+                    se afișează datele complete. Dacă rolul este Guest sau Customer,
+                    datele sensibile sunt ascunse.
+                </p>
+            </div>
+        </div>
+
+        <div class="proxy-table-card">
+
+            <h2>Date produse</h2>
+
+            <table class="proxy-table">
+                <thead>
+                    <tr>
+                        <th>Produs</th>
+                        <th>Categorie</th>
+                        <th>Preț vânzare</th>
+                        <th>Stoc</th>
+                        <th>Furnizor</th>
+                        <th>Preț achiziție</th>
+                        <th>Profit estimat</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (InventoryReportItem item in inventoryItems)
+                    {
+                        <tr>
+                            <td>@item.ProductName</td>
+                            <td>@item.Category</td>
+                            <td>@item.SellingPrice MDL</td>
+                            <td>@item.StockQuantity buc.</td>
+
+                            @if (item.IsSensitiveDataVisible)
+                            {
+                                <td>@item.SupplierName</td>
+                                <td>@item.PurchasePrice MDL</td>
+                                <td>@item.EstimatedProfit MDL</td>
+                            }
+                            else
+                            {
+                                <td class="restricted">Ascuns</td>
+                                <td class="restricted">Ascuns</td>
+                                <td class="restricted">Ascuns</td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            @if (!isManager)
+            {
+                <p class="proxy-warning">
+                    Pentru a vedea furnizorii, prețurile de achiziție și profitul estimat,
+                    autentifică-te ca Manager.
+                </p>
+            }
+            else
+            {
+                <p class="proxy-success">
+                    Ai acces complet la raportul de stocuri.
+                </p>
+            }
+
+        </div>
+
+    </div>
+
+</section>

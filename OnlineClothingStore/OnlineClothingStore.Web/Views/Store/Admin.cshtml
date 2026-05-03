@@ -3,6 +3,7 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 
     var categoryStyles = ViewBag.CategoryStyles;
+    var products = ViewBag.Products;
 }
 
 <section class="shop-hero">
@@ -40,6 +41,73 @@
             Modifica o culoare la categoria <b>T-Shirts</b>, salveaza, apoi verifica in catalog:
             toate tricourile vor avea acelasi stil modificat.
         </p>
+    </div>
+</section>
+
+<section class="admin-stock-section">
+    <div class="admin-stock-header">
+        <div>
+            <span class="section-kicker">Stocuri</span>
+            <h2>Administrare stoc produse</h2>
+            <p>Stocurile sunt vizibile și modificabile doar din Admin.</p>
+        </div>
+    </div>
+
+    <div class="admin-stock-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Produs</th>
+                    <th>Categorie</th>
+                    <th>Mărime</th>
+                    <th>Preț</th>
+                    <th>Stoc</th>
+                    <th>Acțiune</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var product in products)
+                {
+                    <tr>
+                        <td>
+                            <strong>@product.Name</strong>
+                            <span>@product.Color</span>
+                        </td>
+                        <td>@product.Category</td>
+                        <td>@product.Size</td>
+                        <td>@product.Price MDL</td>
+                        <td>
+                            <form asp-controller="Store"
+                                  asp-action="UpdateProductStock"
+                                  method="post"
+                                  class="stock-edit-form">
+                                <input type="hidden" name="id" value="@product.Id" />
+                                <input type="number"
+                                       name="stockQuantity"
+                                       min="0"
+                                       value="@product.StockQuantity" />
+                                <button type="submit">Salvează</button>
+                            </form>
+                        </td>
+                        <td>
+                            @if (product.StockQuantity == 0)
+                            {
+                                <span class="stock-badge danger">Epuizat</span>
+                            }
+                            else if (product.StockQuantity <= 5)
+                            {
+                                <span class="stock-badge warning">Stoc mic</span>
+                            }
+                            else
+                            {
+                                <span class="stock-badge ok">Disponibil</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     </div>
 </section>
 
