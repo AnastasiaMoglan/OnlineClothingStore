@@ -1,0 +1,38 @@
+﻿@startuml
+title State Pattern - User Account State
+
+interface IUserAccountState {
+    +StateName: string
+    +Login(account: UserAccountContext): void
+    +UpgradeToPremium(account: UserAccountContext): void
+    +Block(account: UserAccountContext): void
+    +CanBuy(): bool
+    +CanUseWishlist(): bool
+    +GetDiscountPercent(): decimal
+}
+
+class UserAccountContext {
+    +Email: string
+    +State: IUserAccountState
+    +TransitionTo(newState: IUserAccountState): void
+    +Login(): void
+    +UpgradeToPremium(): void
+    +Block(): void
+    +CanBuy(): bool
+    +CanUseWishlist(): bool
+    +GetDiscountPercent(): decimal
+}
+
+class GuestState
+class RegisteredState
+class PremiumState
+class BlockedState
+
+IUserAccountState <|.. GuestState
+IUserAccountState <|.. RegisteredState
+IUserAccountState <|.. PremiumState
+IUserAccountState <|.. BlockedState
+
+UserAccountContext --> IUserAccountState
+
+@enduml

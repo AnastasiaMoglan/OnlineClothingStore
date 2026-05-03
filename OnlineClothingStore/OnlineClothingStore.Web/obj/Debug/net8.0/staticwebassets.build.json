@@ -1,0 +1,51 @@
+{
+  "Version": 1,
+  "Hash": "P2qHqt/7n0/NBvJsj33YRKLSjBTbGpdnZRVqgR4uo4A=",
+  "Source": "OnlineClothingStore.Web",
+  "BasePath": "_content/OnlineClothingStore.Web",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [
+    {
+      "Identity": "C:\\Users\\anast\\OneDrive\\Desktop\\TMPPPlab\\OnlineClothingStore\\OnlineClothingStore.Core\\OnlineClothingStore.Core.csproj",
+      "Version": 2,
+      "Source": "OnlineClothingStore.Core",
+      "GetPublishAssetsTargets": "ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems",
+      "AdditionalPublishProperties": "Configuration=Debug;Platform=AnyCPU",
+      "AdditionalPublishPropertiesToRemove": "WebPublishProfileFile;TargetFramework",
+      "GetBuildAssetsTargets": "GetCurrentProjectBuildStaticWebAssetItems",
+      "AdditionalBuildProperties": "Configuration=Debug;Platform=AnyCPU",
+      "AdditionalBuildPropertiesToRemove": "WebPublishProfileFile;TargetFramework"
+    }
+  ],
+  "DiscoveryPatterns": [
+    {
+      "Name": "OnlineClothingStore.Web\\wwwroot",
+      "Source": "OnlineClothingStore.Web",
+      "ContentRoot": "C:\\Users\\anast\\OneDrive\\Desktop\\TMPPPlab\\OnlineClothingStore\\OnlineClothingStore.Web\\wwwroot\\",
+      "BasePath": "_content/OnlineClothingStore.Web",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "C:\\Users\\anast\\OneDrive\\Desktop\\TMPPPlab\\OnlineClothingStore\\OnlineClothingStore.Web\\wwwroot\\css\\store.css",
+      "SourceId": "OnlineClothingStore.Web",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\anast\\OneDrive\\Desktop\\TMPPPlab\\OnlineClothingStore\\OnlineClothingStore.Web\\wwwroot\\",
+      "BasePath": "_content/OnlineClothingStore.Web",
+      "RelativePath": "css/store.css",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\css\\store.css"
+    }
+  ]
+}

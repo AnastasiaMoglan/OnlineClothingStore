@@ -1,0 +1,45 @@
+﻿@startuml
+title Chain of Responsibility - Product Return Request
+
+class ReturnRequest {
+    +OrderId: string
+    +ProductName: string
+    +DaysAfterPurchase: int
+    +IsProductUsed: bool
+    +HasOriginalPackage: bool
+}
+
+class ReturnResult {
+    +Approved: bool
+    +ProcessedBy: string
+    +Reason: string
+}
+
+interface IReturnHandler {
+    +SetNext(next: IReturnHandler): IReturnHandler
+    +Handle(request: ReturnRequest): ReturnResult
+}
+
+abstract class BaseReturnHandler {
+    -next: IReturnHandler
+    +SetNext(next: IReturnHandler): IReturnHandler
+    +Handle(request: ReturnRequest): ReturnResult
+    #PassToNext(request: ReturnRequest): ReturnResult
+}
+
+class OrderExistsHandler
+class ReturnPeriodHandler
+class ProductConditionHandler
+class FinalReturnApprovalHandler
+
+IReturnHandler <|.. BaseReturnHandler
+BaseReturnHandler <|-- OrderExistsHandler
+BaseReturnHandler <|-- ReturnPeriodHandler
+BaseReturnHandler <|-- ProductConditionHandler
+BaseReturnHandler <|-- FinalReturnApprovalHandler
+
+BaseReturnHandler --> IReturnHandler
+IReturnHandler --> ReturnRequest
+IReturnHandler --> ReturnResult
+
+@enduml

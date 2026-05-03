@@ -1,0 +1,39 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "OnlineClothingStore.Web/1.0.0": {
+        "dependencies": {
+          "OnlineClothingStore.Core": "1.0.0"
+        },
+        "runtime": {
+          "OnlineClothingStore.Web.dll": {}
+        }
+      },
+      "OnlineClothingStore.Core/1.0.0": {
+        "runtime": {
+          "OnlineClothingStore.Core.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "OnlineClothingStore.Web/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "OnlineClothingStore.Core/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

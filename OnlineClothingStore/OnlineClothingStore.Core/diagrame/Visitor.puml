@@ -1,0 +1,63 @@
+﻿@startuml
+title Visitor Pattern - Promotion Elements
+
+interface IPromotionElement {
+    +Name: string
+    +Accept(visitor: IPromotionVisitor): void
+}
+
+interface IPromotionVisitor {
+    +Visit(banner: HeroBanner): void
+    +Visit(code: PromoCode): void
+    +Visit(card: CampaignCard): void
+}
+
+class HeroBanner {
+    +Name: string
+    +ImageUrl: string
+    +Title: string
+    +Accept(visitor: IPromotionVisitor): void
+}
+
+class PromoCode {
+    +Name: string
+    +Code: string
+    +DiscountPercent: decimal
+    +Accept(visitor: IPromotionVisitor): void
+}
+
+class CampaignCard {
+    +Name: string
+    +CampaignName: string
+    +Priority: int
+    +Accept(visitor: IPromotionVisitor): void
+}
+
+class MarketingValidationVisitor {
+    -messages: List<string>
+    +Visit(banner: HeroBanner): void
+    +Visit(code: PromoCode): void
+    +Visit(card: CampaignCard): void
+    +GetMessages(): IReadOnlyList<string>
+}
+
+class PromotionCostVisitor {
+    -totalCost: decimal
+    +Visit(banner: HeroBanner): void
+    +Visit(code: PromoCode): void
+    +Visit(card: CampaignCard): void
+    +GetTotalCost(): decimal
+}
+
+IPromotionElement <|.. HeroBanner
+IPromotionElement <|.. PromoCode
+IPromotionElement <|.. CampaignCard
+
+IPromotionVisitor <|.. MarketingValidationVisitor
+IPromotionVisitor <|.. PromotionCostVisitor
+
+HeroBanner --> IPromotionVisitor
+PromoCode --> IPromotionVisitor
+CampaignCard --> IPromotionVisitor
+
+@enduml

@@ -1,0 +1,59 @@
+﻿@startuml
+title Mediator Pattern - Checkout Page Coordination
+
+interface ICheckoutMediator {
+    +Notify(sender: CheckoutComponent, eventName: string): void
+}
+
+abstract class CheckoutComponent {
+    #mediator: ICheckoutMediator
+    +SetMediator(mediator: ICheckoutMediator): void
+}
+
+class AddressComponent {
+    +Address: string
+    +SetAddress(address: string): void
+}
+
+class DeliveryComponent {
+    +DeliveryType: string
+    +DeliveryPrice: decimal
+    +SelectDelivery(type: string, price: decimal): void
+}
+
+class PaymentComponent {
+    +PaymentMethod: string
+    +SelectPayment(method: string): void
+}
+
+class CheckoutSummaryComponent {
+    +Address: string
+    +DeliveryType: string
+    +PaymentMethod: string
+    +Total: decimal
+    +Refresh(address: string, delivery: string, payment: string, total: decimal): void
+}
+
+class CheckoutMediator {
+    -addressComponent: AddressComponent
+    -deliveryComponent: DeliveryComponent
+    -paymentComponent: PaymentComponent
+    -summaryComponent: CheckoutSummaryComponent
+    -baseTotal: decimal
+    +Notify(sender: CheckoutComponent, eventName: string): void
+}
+
+ICheckoutMediator <|.. CheckoutMediator
+CheckoutComponent --> ICheckoutMediator
+
+CheckoutComponent <|-- AddressComponent
+CheckoutComponent <|-- DeliveryComponent
+CheckoutComponent <|-- PaymentComponent
+CheckoutComponent <|-- CheckoutSummaryComponent
+
+CheckoutMediator --> AddressComponent
+CheckoutMediator --> DeliveryComponent
+CheckoutMediator --> PaymentComponent
+CheckoutMediator --> CheckoutSummaryComponent
+
+@enduml

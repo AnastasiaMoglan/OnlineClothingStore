@@ -1,0 +1,41 @@
+﻿@startuml
+title Template Method Pattern - Store Document Generator
+
+abstract class StoreDocumentGenerator {
+    +Generate(documentId: string): string
+    #LoadData(documentId: string): string
+    #GenerateHeader(): string
+    #GenerateContent(data: string): string
+    #GenerateFooter(): string
+    #Export(document: string): string
+}
+
+class InvoiceDocumentGenerator {
+    #LoadData(documentId: string): string
+    #GenerateHeader(): string
+    #GenerateContent(data: string): string
+    #GenerateFooter(): string
+    #Export(document: string): string
+}
+
+class OrderConfirmationGenerator {
+    #LoadData(documentId: string): string
+    #GenerateHeader(): string
+    #GenerateContent(data: string): string
+    #GenerateFooter(): string
+    #Export(document: string): string
+}
+
+class GiftCardDocumentGenerator {
+    #LoadData(documentId: string): string
+    #GenerateHeader(): string
+    #GenerateContent(data: string): string
+    #GenerateFooter(): string
+    #Export(document: string): string
+}
+
+StoreDocumentGenerator <|-- InvoiceDocumentGenerator
+StoreDocumentGenerator <|-- OrderConfirmationGenerator
+StoreDocumentGenerator <|-- GiftCardDocumentGenerator
+
+@enduml
