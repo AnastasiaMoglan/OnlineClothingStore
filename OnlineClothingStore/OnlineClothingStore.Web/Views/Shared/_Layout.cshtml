@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿﻿<!DOCTYPE html>
 <html lang="ro">
 <head>
     <meta charset="utf-8" />
@@ -12,20 +12,20 @@
 
 <header class="topbar">
     <div class="logo">
-        <a href="/Store/Index">BlueWear</a>
+        <a asp-controller="Store" asp-action="Index">BlueWear</a>
     </div>
 
     <nav>
-        <a href="/Store/Index">Home</a>
-        <a href="/Store/Catalog">Catalog</a>
-        <a href="/Store/Wishlist">Wishlist (@(ViewBag.WishlistCount ?? 0))</a>
-        <a href="/Store/Cart">Cos (@(ViewBag.CartCount ?? 0))</a>
-        <a href="/Store/AdminLogin">Admin Login</a>
+        <a asp-controller="Store" asp-action="Index">Home</a>
+        <a asp-controller="Store" asp-action="Catalog">Catalog</a>
+        <a asp-controller="Store" asp-action="Wishlist">Wishlist (@(ViewBag.WishlistCount ?? 0))</a>
+        <a asp-controller="Store" asp-action="Cart">Coș (@(ViewBag.CartCount ?? 0))</a>
+        <a asp-controller="Store" asp-action="AdminLogin">Admin Login</a>
     </nav>
 
     <div class="auth">
-        <a href="/Store/AdminLogin" class="manager">Admin</a>
-        <a href="/Store/Logout">Logout</a>
+        <a class="manager" asp-controller="Store" asp-action="Admin">Admin</a>
+        <a asp-controller="Store" asp-action="Index">Logout</a>
     </div>
 </header>
 

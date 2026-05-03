@@ -1,104 +1,48 @@
-﻿@{
-    ViewData["Title"] = "Home";
-    Layout = "~/Views/Shared/_Layout.cshtml";
-
-    var featuredProducts = ViewBag.FeaturedProducts;
-    var categories = ViewBag.Categories;
+﻿﻿@{
+    ViewData["Title"] = "BlueWear";
 }
 
-<section class="home-hero-fashion">
-    <div class="home-hero-content">
-        <span class="home-badge">BlueWear Collection</span>
+<section class="home-page">
+    <div class="home-content">
 
-        <h1>Îmbracă-te cu stil, în fiecare zi</h1>
-
-        <p>
-            Descoperă colecția BlueWear: haine moderne, confortabile și ușor de purtat,
-            potrivite pentru orice stil — casual, elegant sau streetwear.
-        </p>
-
-        <div class="home-hero-buttons">
-            <a href="/Store/Catalog" class="btn primary">Vezi catalogul</a>
-            <a href="/Store/Wishlist" class="btn secondary">Wishlist</a>
+        <div class="home-logo">
+            <span>BW</span>
         </div>
-    </div>
-</section>
 
-<section class="home-short-info">
-    <div class="home-info-card">
-        <h3>Stil modern</h3>
-        <p>Produse actuale, ușor de combinat și potrivite pentru fiecare zi.</p>
-    </div>
+        <p class="home-subtitle">BlueWear Online Store</p>
 
-    <div class="home-info-card">
-        <h3>Categorii clare</h3>
-        <p>Tricouri, jeans, hanorace, rochii, geci și încălțăminte într-un singur loc.</p>
-    </div>
+        <h1>Stilul tău începe aici</h1>
 
-    <div class="home-info-card">
-        <h3>Shopping simplu</h3>
-        <p>Adaugi rapid produsele preferate în coș sau în wishlist.</p>
-    </div>
-</section>
-
-<section class="home-categories-section">
-    <div class="section-title-wrap">
-        <span class="section-kicker">Explorează</span>
-        <h2>Categorii populare</h2>
-    </div>
-
-    <div class="category-chip-list">
-        @foreach (var category in categories)
-        {
-            <a href="/Store/Catalog?category=@category" class="category-chip">
-                @category
-            </a>
-        }
-    </div>
-</section>
-
-<section class="home-featured-products">
-    <div class="section-title-wrap">
-        <span class="section-kicker">Recomandări</span>
-        <h2>Produse recomandate</h2>
-    </div>
-
-    <div class="featured-grid">
-        @foreach (var product in featuredProducts)
-        {
-            <div class="featured-product-card">
-                <div class="featured-product-image">
-                    <span>@product.Category</span>
-                </div>
-
-                <div class="featured-product-content">
-                    <span class="featured-category">@product.Category</span>
-
-                    <h3>@product.Name</h3>
-                    <p>Culoare: @product.Color</p>
-                    <p>Mărime: @product.Size</p>
-
-                    <strong>@product.Price MDL</strong>
-
-                    <div class="featured-actions">
-                        <a href="/Store/Product/@product.Id">Detalii</a>
-                        <a href="/Store/AddToCart/@product.Id">Adaugă în coș</a>
-                    </div>
-                </div>
-            </div>
-        }
-    </div>
-</section>
-
-<section class="home-bottom-banner">
-    <div class="home-bottom-banner-content">
-        <span class="section-kicker">BlueWear</span>
-        <h2>Găsește outfitul perfect pentru tine</h2>
-        <p>
-            Intră în catalog și alege hainele care ți se potrivesc cel mai bine.
-            Un magazin online simplu, modern și ușor de folosit.
+        <p class="home-text">
+            Descoperă haine moderne, comode și ușor de combinat pentru fiecare zi.
         </p>
 
-        <a href="/Store/Catalog" class="btn primary">Începe cumpărăturile</a>
+        <div class="home-buttons">
+            <a asp-controller="Store" asp-action="Catalog" class="home-btn-primary">
+                Vezi catalogul
+            </a>
+
+            <a asp-controller="Store" asp-action="Wishlist" class="home-btn-secondary">
+                Wishlist
+            </a>
+        </div>
+
+        <div class="home-cards">
+            <div class="home-card">
+                <h3>Casual</h3>
+                <p>Ținute pentru fiecare zi</p>
+            </div>
+
+            <div class="home-card">
+                <h3>Modern</h3>
+                <p>Stil actual și curat</p>
+            </div>
+
+            <div class="home-card">
+                <h3>Rapid</h3>
+                <p>Adaugi simplu în coș</p>
+            </div>
+        </div>
+
     </div>
 </section>
