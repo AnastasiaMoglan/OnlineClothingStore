@@ -1,0 +1,144 @@
+﻿@using OnlineClothingStore.Web.Controllers
+
+@{
+    ViewData["Title"] = "Comenzi Admin";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    List<StoreController.StoreProduct> products =
+        ViewBag.Products as List<StoreController.StoreProduct> ?? new List<StoreController.StoreProduct>();
+
+    IReadOnlyList<StoreController.IAdminCommand> commandHistory =
+        ViewBag.CommandHistory as IReadOnlyList<StoreController.IAdminCommand>
+        ?? new List<StoreController.IAdminCommand>();
+
+    string lastMessage = ViewBag.CommandLastMessage as string ?? "Nu a fost executată nicio comandă.";
+}
+
+<section class="shop-hero">
+    <div>
+        <span class="hero-kicker">Command Pattern</span>
+        <h1>Comenzi administrative</h1>
+        <p>
+            Această pagină demonstrează șablonul Command prin acțiuni administrative
+            executabile și reversibile: modificarea stocului și modificarea prețului produselor.
+        </p>
+    </div>
+
+    <a asp-controller="Store" asp-action="Admin" class="btn secondary">Înapoi la Admin</a>
+</section>
+
+<section class="command-page">
+
+    <div class="command-status-card">
+        <h2>Ultima acțiune</h2>
+
+        <p>
+            @lastMessage
+        </p>
+
+        <form asp-controller="Store" asp-action="UndoLastAdminCommand" method="post">
+            <button type="submit" class="command-undo-btn">
+                Undo ultima comandă
+            </button>
+        </form>
+    </div>
+
+    <div class="command-layout">
+
+        <div class="command-products-card">
+            <h2>Produse gestionate</h2>
+
+            <p class="command-info">
+                Aici managerul poate executa comenzi asupra produselor.
+                Fiecare modificare este încapsulată într-un obiect Command și salvată în istoric.
+            </p>
+
+            <div class="command-products-list">
+
+                @foreach (StoreController.StoreProduct product in products)
+                {
+                    <div class="command-product-item">
+
+                        <div class="command-product-header">
+                            <div>
+                                <h3>@product.Name</h3>
+                                <span>@product.Category | @product.Color | Mărime @product.Size</span>
+                            </div>
+
+                            <div class="command-product-values">
+                                <strong>@product.Price MDL</strong>
+                                <small>Stoc: @product.StockQuantity buc.</small>
+                            </div>
+                        </div>
+
+                        <div class="command-actions-grid">
+
+                            <form asp-controller="Store" asp-action="ExecuteStockCommand" method="post" class="command-action-form">
+                                <input type="hidden" name="id" value="@product.Id" />
+
+                                <label>Stoc nou</label>
+                                <input type="number" name="stockQuantity" value="@product.StockQuantity" min="0" />
+
+                                <button type="submit" class="command-btn">
+                                    Execută modificare stoc
+                                </button>
+                            </form>
+
+                            <form asp-controller="Store" asp-action="ExecutePriceCommand" method="post" class="command-action-form">
+                                <input type="hidden" name="id" value="@product.Id" />
+
+                                <label>Preț nou</label>
+                                <input type="number" name="price" value="@product.Price" min="0" step="1" />
+
+                                <button type="submit" class="command-btn secondary">
+                                    Execută modificare preț
+                                </button>
+                            </form>
+
+                        </div>
+
+                    </div>
+                }
+
+            </div>
+        </div>
+
+        <div class="command-history-card">
+            <h2>Istoric comenzi</h2>
+
+            @if (commandHistory.Count == 0)
+            {
+                <p class="empty-result">
+                    Nu există încă acțiuni executate. Modifică stocul sau prețul unui produs pentru a vedea istoricul.
+                </p>
+            }
+            else
+            {
+                <div class="command-history-list">
+                    @foreach (StoreController.IAdminCommand command in commandHistory)
+                    {
+                        <div class="command-history-item">
+                            <strong>@command.Name</strong>
+                            <p>@command.Description</p>
+                        </div>
+                    }
+                </div>
+            }
+
+            <div class="explanation-box">
+                <h3>Explicație Command</h3>
+                <p>
+                    În loc ca modificarea stocului sau prețului să fie executată direct,
+                    fiecare acțiune este transformată într-un obiect de comandă.
+                </p>
+
+                <p>
+                    Comenzile au metodele <strong>Execute()</strong> și <strong>Undo()</strong>,
+                    iar <strong>AdminCommandInvoker</strong> le execută și le păstrează în istoric.
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+</section>

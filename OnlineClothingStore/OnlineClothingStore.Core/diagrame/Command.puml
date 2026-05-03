@@ -1,68 +1,74 @@
 ﻿@startuml
-title Command Pattern - Shopping Cart Actions
+skinparam classAttributeIconSize 0
+skinparam shadowing false
 
-class CartItem {
-    +ProductId: int
-    +ProductName: string
-    +Price: decimal
-    +Quantity: int
+skinparam class {
+    BackgroundColor #F8FBFF
+    BorderColor #1F5F99
+    ArrowColor #1F5F99
 }
 
-class ShoppingCart {
-    -items: List<CartItem>
-    +AddItem(item: CartItem): void
-    +RemoveItem(productId: int): CartItem?
-    +Clear(): List<CartItem>
-    +RestoreItems(items: List<CartItem>): void
-    +GetItems(): IReadOnlyList<CartItem>
-    +GetTotal(): decimal
+title Command Pattern - BlueWear Admin Actions
+
+interface IAdminCommand {
+    + Name : string
+    + Description : string
+    + Execute() : void
+    + Undo() : void
 }
 
-interface ICartCommand {
-    +Execute(): void
-    +Undo(): void
-    +Description: string
+class UpdateProductStockCommand {
+    - product : StoreProduct
+    - oldStock : int
+    - newStock : int
+    + Name : string
+    + Description : string
+    + Execute() : void
+    + Undo() : void
 }
 
-class AddToCartCommand {
-    -cart: ShoppingCart
-    -item: CartItem
-    +Execute(): void
-    +Undo(): void
-    +Description: string
+class ChangeProductPriceCommand {
+    - product : StoreProduct
+    - oldPrice : decimal
+    - newPrice : decimal
+    + Name : string
+    + Description : string
+    + Execute() : void
+    + Undo() : void
 }
 
-class RemoveFromCartCommand {
-    -cart: ShoppingCart
-    -productId: int
-    -removedItem: CartItem
-    +Execute(): void
-    +Undo(): void
-    +Description: string
+class AdminCommandInvoker {
+    - history : Stack<IAdminCommand>
+    + LastMessage : string
+    + History : IReadOnlyList<IAdminCommand>
+    + ExecuteCommand(command : IAdminCommand) : void
+    + UndoLastCommand() : void
 }
 
-class ClearCartCommand {
-    -cart: ShoppingCart
-    -backupItems: List<CartItem>
-    +Execute(): void
-    +Undo(): void
-    +Description: string
+class StoreProduct {
+    + Id : int
+    + Name : string
+    + Category : string
+    + Price : decimal
+    + StockQuantity : int
 }
 
-class CartCommandInvoker {
-    -history: Stack<ICartCommand>
-    +ExecuteCommand(command: ICartCommand): void
-    +UndoLastCommand(): void
+class StoreController {
+    - CommandInvoker : AdminCommandInvoker
+    + AdminCommands() : IActionResult
+    + ExecuteStockCommand(id : int, stockQuantity : int) : IActionResult
+    + ExecutePriceCommand(id : int, price : decimal) : IActionResult
+    + UndoLastAdminCommand() : IActionResult
 }
 
-ICartCommand <|.. AddToCartCommand
-ICartCommand <|.. RemoveFromCartCommand
-ICartCommand <|.. ClearCartCommand
+IAdminCommand <|.. UpdateProductStockCommand
+IAdminCommand <|.. ChangeProductPriceCommand
 
-AddToCartCommand --> ShoppingCart
-RemoveFromCartCommand --> ShoppingCart
-ClearCartCommand --> ShoppingCart
-CartCommandInvoker --> ICartCommand
-ShoppingCart --> CartItem
+UpdateProductStockCommand --> StoreProduct : modifies
+ChangeProductPriceCommand --> StoreProduct : modifies
+
+AdminCommandInvoker o-- IAdminCommand : stores history
+StoreController ..> AdminCommandInvoker : uses
+StoreController ..> IAdminCommand : creates commands
 
 @enduml

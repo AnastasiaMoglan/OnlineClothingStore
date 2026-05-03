@@ -1999,3 +1999,234 @@ footer {
         align-items: flex-start;
     }
 }
+.command-page {
+    padding: 30px 40px 50px;
+    background: linear-gradient(135deg, #eaf4ff, #ffffff);
+    min-height: 100vh;
+}
+
+.command-status-card {
+    background: #ffffff;
+    border-radius: 28px;
+    padding: 28px;
+    box-shadow: 0 15px 40px rgba(0, 75, 140, 0.10);
+    margin-bottom: 28px;
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    align-items: center;
+}
+
+.command-status-card h2 {
+    color: #0b3d70;
+    margin-bottom: 8px;
+}
+
+.command-status-card p {
+    color: #49647d;
+    font-weight: 700;
+}
+
+.command-undo-btn {
+    border: none;
+    border-radius: 16px;
+    padding: 13px 18px;
+    background: #fff1f1;
+    color: #b42318;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.command-undo-btn:hover {
+    background: #ffe0e0;
+}
+
+.command-layout {
+    display: grid;
+    grid-template-columns: 1.4fr 0.8fr;
+    gap: 28px;
+}
+
+.command-products-card,
+.command-history-card {
+    background: #ffffff;
+    border-radius: 28px;
+    padding: 30px;
+    box-shadow: 0 15px 40px rgba(0, 75, 140, 0.10);
+}
+
+.command-products-card h2,
+.command-history-card h2 {
+    color: #0b3d70;
+    margin-bottom: 16px;
+}
+
+.command-info {
+    background: #f1f8ff;
+    color: #49647d;
+    line-height: 1.6;
+    padding: 15px 18px;
+    border-radius: 16px;
+    margin-bottom: 22px;
+}
+
+.command-products-list {
+    display: grid;
+    gap: 18px;
+}
+
+.command-product-item {
+    border: 1px solid #cfe3f5;
+    background: #f8fbff;
+    border-radius: 22px;
+    padding: 20px;
+}
+
+.command-product-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    align-items: flex-start;
+    margin-bottom: 18px;
+}
+
+.command-product-header h3 {
+    color: #0b3d70;
+    margin-bottom: 5px;
+}
+
+.command-product-header span {
+    color: #49647d;
+}
+
+.command-product-values {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.command-product-values strong {
+    color: #0b3d70;
+    font-size: 18px;
+}
+
+.command-product-values small {
+    color: #49647d;
+    font-weight: 700;
+}
+
+.command-actions-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.command-action-form {
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 16px;
+    border: 1px solid #d9eaf8;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.command-action-form label {
+    color: #244b6e;
+    font-weight: 800;
+}
+
+.command-action-form input {
+    border: 1px solid #cfe3f5;
+    border-radius: 14px;
+    padding: 12px 14px;
+    background: #f8fbff;
+    font-size: 15px;
+}
+
+.command-btn {
+    border: none;
+    border-radius: 15px;
+    padding: 12px 14px;
+    background: linear-gradient(135deg, #0b74d1, #42a5f5);
+    color: white;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.command-btn.secondary {
+    background: linear-gradient(135deg, #174ea6, #7baaf7);
+}
+
+.command-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(0, 105, 190, 0.20);
+}
+
+.command-history-list {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 22px;
+}
+
+.command-history-item {
+    background: linear-gradient(135deg, #f7fbff, #eaf4ff);
+    border: 1px solid #cfe3f5;
+    border-radius: 16px;
+    padding: 15px;
+}
+
+.command-history-item strong {
+    display: block;
+    color: #0b3d70;
+    margin-bottom: 6px;
+}
+
+.command-history-item p {
+    color: #49647d;
+    line-height: 1.5;
+}
+
+.admin-command-shortcut {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 24px;
+    margin: 24px 0;
+    box-shadow: 0 12px 30px rgba(0, 75, 140, 0.10);
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    align-items: center;
+}
+
+.admin-command-shortcut h2 {
+    color: #0b3d70;
+    margin-bottom: 8px;
+}
+
+.admin-command-shortcut p {
+    color: #49647d;
+}
+
+@media (max-width: 1050px) {
+    .command-layout,
+    .command-actions-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .command-page {
+        padding: 20px;
+    }
+
+    .command-status-card,
+    .admin-command-shortcut,
+    .command-product-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .command-product-values {
+        text-align: left;
+    }
+}

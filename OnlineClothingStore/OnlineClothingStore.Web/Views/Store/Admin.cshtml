@@ -1,4 +1,5 @@
 @using OnlineClothingStore.App.Structural.Observer
+@using OnlineClothingStore.Web.Controllers
 
 @{
     ViewData["Title"] = "Admin";
@@ -6,8 +7,19 @@
 
     var categoryStyles = ViewBag.CategoryStyles;
     var products = ViewBag.Products;
-    List<IStockObserver> observers = ViewBag.Observers as List<IStockObserver> ?? new List<IStockObserver>();
-    List<StockNotification> notifications = ViewBag.StockNotifications as List<StockNotification> ?? new List<StockNotification>();
+
+    List<IStockObserver> observers =
+        ViewBag.Observers as List<IStockObserver> ?? new List<IStockObserver>();
+
+    List<StockNotification> notifications =
+        ViewBag.StockNotifications as List<StockNotification> ?? new List<StockNotification>();
+
+    IReadOnlyList<StoreController.IAdminCommand> commandHistory =
+        ViewBag.CommandHistory as IReadOnlyList<StoreController.IAdminCommand>
+        ?? new List<StoreController.IAdminCommand>();
+
+    string commandLastMessage =
+        ViewBag.CommandLastMessage as string ?? "Nu a fost executata nicio comanda.";
 }
 
 <section class="shop-hero">
@@ -15,7 +27,8 @@
         <span class="hero-kicker">Admin Panel</span>
         <h1>Administrare magazin</h1>
         <p>
-            Aici adminul gestioneaza stilurile, stocurile si abonarea clientilor la modificarile de stoc.
+            Aici adminul gestioneaza stilurile, stocurile, comenzile administrative
+            si abonarea clientilor la modificarile de stoc.
         </p>
     </div>
 
@@ -47,12 +60,68 @@
     </div>
 </section>
 
+<section class="admin-command-shortcut">
+    <div>
+        <span class="section-kicker">Command Pattern</span>
+        <h2>Comenzi administrative</h2>
+        <p>
+            Modificarile de stoc si pret pot fi executate ca obiecte Command.
+            Fiecare actiune este salvata in istoric si poate fi anulata prin Undo.
+        </p>
+
+        <p class="pattern-note">
+            Ultima actiune: @commandLastMessage
+        </p>
+    </div>
+
+    <div class="admin-command-actions">
+        <a asp-controller="Store" asp-action="AdminCommands" class="btn primary">
+            Deschide comenzi admin
+        </a>
+
+        <form asp-controller="Store" asp-action="UndoLastAdminCommand" method="post">
+            <button type="submit" class="btn secondary">
+                Undo ultima comanda
+            </button>
+        </form>
+    </div>
+</section>
+
+@if (commandHistory.Count > 0)
+{
+    <section class="admin-command-history">
+        <div class="admin-stock-header">
+            <div>
+                <span class="section-kicker">Istoric Command</span>
+                <h2>Ultimele comenzi executate</h2>
+                <p>
+                    Aceste actiuni au fost executate prin sablonul Command si pot fi anulate in ordine inversa.
+                </p>
+            </div>
+        </div>
+
+        <div class="command-history-list">
+            @foreach (StoreController.IAdminCommand command in commandHistory)
+            {
+                <div class="command-history-item">
+                    <strong>@command.Name</strong>
+                    <p>@command.Description</p>
+                </div>
+            }
+        </div>
+    </section>
+}
+
 <section class="admin-stock-section">
     <div class="admin-stock-header">
         <div>
             <span class="section-kicker">Stocuri</span>
             <h2>Administrare stoc produse</h2>
-            <p>Stocurile sunt vizibile si modificabile doar din Admin.</p>
+            <p>
+                Stocurile sunt vizibile si modificabile doar din Admin.
+                Pentru demonstrarea completa a sablonului Command, foloseste pagina
+                <b>Comenzi admin</b>, unde modificarile pot fi anulate prin Undo.
+            </p>
         </div>
     </div>
 
@@ -77,22 +146,27 @@
                             <strong>@product.Name</strong>
                             <span>@product.Color</span>
                         </td>
+
                         <td>@product.Category</td>
                         <td>@product.Size</td>
                         <td>@product.Price MDL</td>
+
                         <td>
                             <form asp-controller="Store"
                                   asp-action="UpdateProductStock"
                                   method="post"
                                   class="stock-edit-form">
                                 <input type="hidden" name="id" value="@product.Id" />
+
                                 <input type="number"
                                        name="stockQuantity"
                                        min="0"
                                        value="@product.StockQuantity" />
+
                                 <button type="submit">Salveaza</button>
                             </form>
                         </td>
+
                         <td>
                             @if (product.StockQuantity == 0)
                             {
@@ -117,7 +191,11 @@
 <section class="admin-observer-section">
     <div class="observer-card">
         <h2>Abonari active</h2>
-        <p class="observer-info">Aceste abonari sunt vizibile doar pentru Admin.</p>
+
+        <p class="observer-info">
+            Aceste abonari sunt vizibile doar pentru Admin.
+            Cand stocul unui produs este modificat, clientii abonati la acel produs sunt notificati automat.
+        </p>
 
         @if (observers.Count == 0)
         {
@@ -138,7 +216,10 @@
                         <form asp-controller="Store" asp-action="UnsubscribeStockAlert" method="post">
                             <input type="hidden" name="productId" value="@observer.ProductId" />
                             <input type="hidden" name="email" value="@observer.Email" />
-                            <button type="submit" class="observer-remove-btn">Dezaboneaza</button>
+
+                            <button type="submit" class="observer-remove-btn">
+                                Dezaboneaza
+                            </button>
                         </form>
                     </div>
                 }
@@ -149,6 +230,7 @@
     <div class="observer-card">
         <div class="observer-title-row">
             <h2>Notificari generate</h2>
+
             <a asp-controller="Store" asp-action="ClearStockNotifications" class="observer-clear-btn">
                 Sterge notificarile
             </a>

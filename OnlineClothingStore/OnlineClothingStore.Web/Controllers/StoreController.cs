@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
@@ -37,6 +38,8 @@ public class StoreController : Controller
     private static readonly ProductStockSubject StockSubject = new();
 
     private static readonly List<StockNotification> StockNotifications = new();
+
+    private static readonly AdminCommandInvoker CommandInvoker = new();
 
     public IActionResult Index()
     {
@@ -144,6 +147,9 @@ public class StoreController : Controller
         ViewBag.Products = Products;
         ViewBag.Observers = StockSubject.GetObservers();
         ViewBag.StockNotifications = StockNotifications;
+        ViewBag.CommandHistory = CommandInvoker.History;
+        ViewBag.CommandLastMessage = CommandInvoker.LastMessage;
+
         ViewBag.FlyweightAdminInfo =
             "Adminul modifica un singur stil partajat pentru o categorie. Toate produsele din acea categorie vor folosi noul stil.";
 
@@ -186,27 +192,13 @@ public class StoreController : Controller
 
         if (product != null)
         {
-            int oldStock = product.StockQuantity;
-            int newStock = stockQuantity < 0 ? 0 : stockQuantity;
+            IAdminCommand command = new UpdateProductStockCommand(
+                product,
+                stockQuantity,
+                NotifyStockObservers
+            );
 
-            product.StockQuantity = newStock;
-
-            if (oldStock != newStock)
-            {
-                StockChangedEvent stockEvent = new(
-                    product.Id,
-                    product.Name,
-                    oldStock,
-                    newStock
-                );
-
-                List<StockNotification> notifications = StockSubject.Notify(stockEvent);
-
-                if (notifications.Count > 0)
-                {
-                    StockNotifications.AddRange(notifications);
-                }
-            }
+            CommandInvoker.ExecuteCommand(command);
         }
 
         return RedirectToAction(nameof(Admin));
@@ -449,10 +441,6 @@ public class StoreController : Controller
 
     // ============================================================
     // DECORATOR PATTERN
-    // Functionalitate adaugata fara a modifica Flyweight.
-    // Demonstreaza:
-    // BasicOrderNotification + EmailNotificationDecorator
-    // + SmsNotificationDecorator + PushNotificationDecorator
     // ============================================================
 
     public IActionResult Decorator()
@@ -594,10 +582,6 @@ public class StoreController : Controller
 
     // ============================================================
     // BRIDGE PATTERN
-    // Functionalitate adaugata fara a modifica Flyweight sau Decorator.
-    // Demonstreaza separarea dintre:
-    // 1. Tipul comenzii: Standard / Express / Cadou
-    // 2. Metoda de livrare: Curier / Magazin / Locker
     // ============================================================
 
     public IActionResult Delivery()
@@ -736,9 +720,6 @@ public class StoreController : Controller
 
     // ============================================================
     // STRATEGY PATTERN
-    // Functionalitate adaugata in Checkout.
-    // Demonstreaza alegerea algoritmului de reducere:
-    // Fara reducere / Client nou / Student / VIP.
     // ============================================================
 
     private static IDiscountStrategy CreateDiscountStrategy(string discountType)
@@ -771,9 +752,6 @@ public class StoreController : Controller
 
     // ============================================================
     // OBSERVER PATTERN
-    // Functionalitate adaugata fara a modifica Flyweight,
-    // Decorator, Bridge, Proxy sau Strategy.
-    // Demonstreaza abonarea clientilor la modificarile de stoc.
     // ============================================================
 
     public IActionResult StockAlerts()
@@ -840,11 +818,118 @@ public class StoreController : Controller
         return RedirectToAction(nameof(Admin));
     }
 
+    private static void NotifyStockObservers(StoreProduct product, int oldStock, int newStock)
+    {
+        if (oldStock == newStock)
+        {
+            return;
+        }
+
+        StockChangedEvent stockEvent = new(
+            product.Id,
+            product.Name,
+            oldStock,
+            newStock
+        );
+
+        List<StockNotification> notifications = StockSubject.Notify(stockEvent);
+
+        if (notifications.Count > 0)
+        {
+            StockNotifications.AddRange(notifications);
+        }
+    }
+
+    // ============================================================
+    // COMMAND PATTERN
+    // ============================================================
+
+    public IActionResult AdminCommands()
+    {
+        string role = HttpContext.Session.GetString("role") ?? "Guest";
+
+        if (role != "Manager")
+        {
+            return RedirectToAction(nameof(AdminLogin));
+        }
+
+        ViewBag.Products = Products;
+        ViewBag.CommandHistory = CommandInvoker.History;
+        ViewBag.CommandLastMessage = CommandInvoker.LastMessage;
+
+        AddLayoutCounters();
+
+        return View();
+    }
+
+    [HttpPost]
+    public IActionResult ExecuteStockCommand(int id, int stockQuantity)
+    {
+        string role = HttpContext.Session.GetString("role") ?? "Guest";
+
+        if (role != "Manager")
+        {
+            return RedirectToAction(nameof(AdminLogin));
+        }
+
+        StoreProduct? product = Products.FirstOrDefault(p => p.Id == id);
+
+        if (product != null)
+        {
+            IAdminCommand command = new UpdateProductStockCommand(
+                product,
+                stockQuantity,
+                NotifyStockObservers
+            );
+
+            CommandInvoker.ExecuteCommand(command);
+        }
+
+        return RedirectToAction(nameof(AdminCommands));
+    }
+
+    [HttpPost]
+    public IActionResult ExecutePriceCommand(int id, decimal price)
+    {
+        string role = HttpContext.Session.GetString("role") ?? "Guest";
+
+        if (role != "Manager")
+        {
+            return RedirectToAction(nameof(AdminLogin));
+        }
+
+        StoreProduct? product = Products.FirstOrDefault(p => p.Id == id);
+
+        if (product != null)
+        {
+            IAdminCommand command = new ChangeProductPriceCommand(
+                product,
+                price
+            );
+
+            CommandInvoker.ExecuteCommand(command);
+        }
+
+        return RedirectToAction(nameof(AdminCommands));
+    }
+
+    [HttpPost]
+    public IActionResult UndoLastAdminCommand()
+    {
+        string role = HttpContext.Session.GetString("role") ?? "Guest";
+
+        if (role != "Manager")
+        {
+            return RedirectToAction(nameof(AdminLogin));
+        }
+
+        CommandInvoker.UndoLastCommand();
+
+        return RedirectToAction(nameof(AdminCommands));
+    }
+
     // ============================================================
     // PROXY PATTERN
-    // Functionalitate adaugata fara a modifica Flyweight,
-    // Decorator, Bridge, Strategy sau Observer.
-    // Demonstreaza controlul accesului la raportul de stocuri.
     // ============================================================
 
     public IActionResult Inventory()
@@ -916,7 +1001,7 @@ public class StoreController : Controller
 
         public string Category { get; }
 
-        public decimal Price { get; }
+        public decimal Price { get; set; }
 
         public string Size { get; }
 
@@ -953,6 +1038,113 @@ public class StoreController : Controller
         {
             Product = product;
             Quantity = quantity;
+        }
+    }
+
+    public interface IAdminCommand
+    {
+        string Name { get; }
+
+        string Description { get; }
+
+        void Execute();
+
+        void Undo();
+    }
+
+    public class UpdateProductStockCommand : IAdminCommand
+    {
+        private readonly StoreProduct _product;
+        private readonly int _oldStock;
+        private readonly int _newStock;
+        private readonly Action<StoreProduct, int, int> _onStockChanged;
+
+        public UpdateProductStockCommand(
+            StoreProduct product,
+            int newStock,
+            Action<StoreProduct, int, int> onStockChanged)
+        {
+            _product = product;
+            _oldStock = product.StockQuantity;
+            _newStock = newStock < 0 ? 0 : newStock;
+            _onStockChanged = onStockChanged;
+        }
+
+        public string Name => "Modificare stoc";
+
+        public string Description =>
+            $"Produsul {_product.Name}: stoc schimbat de la {_oldStock} la {_newStock}.";
+
+        public void Execute()
+        {
+            _product.StockQuantity = _newStock;
+            _onStockChanged(_product, _oldStock, _newStock);
+        }
+
+        public void Undo()
+        {
+            int currentStock = _product.StockQuantity;
+            _product.StockQuantity = _oldStock;
+            _onStockChanged(_product, currentStock, _oldStock);
+        }
+    }
+
+    public class ChangeProductPriceCommand : IAdminCommand
+    {
+        private readonly StoreProduct _product;
+        private readonly decimal _oldPrice;
+        private readonly decimal _newPrice;
+
+        public ChangeProductPriceCommand(StoreProduct product, decimal newPrice)
+        {
+            _product = product;
+            _oldPrice = product.Price;
+            _newPrice = newPrice < 0 ? 0 : newPrice;
+        }
+
+        public string Name => "Modificare preț";
+
+        public string Description =>
+            $"Produsul {_product.Name}: preț schimbat de la {_oldPrice} MDL la {_newPrice} MDL.";
+
+        public void Execute()
+        {
+            _product.Price = _newPrice;
+        }
+
+        public void Undo()
+        {
+            _product.Price = _oldPrice;
+        }
+    }
+
+    public class AdminCommandInvoker
+    {
+        private readonly Stack<IAdminCommand> _history = new();
+
+        public IReadOnlyList<IAdminCommand> History => _history.ToList();
+
+        public string LastMessage { get; private set; } = "Nu a fost executată nicio comandă.";
+
+        public void ExecuteCommand(IAdminCommand command)
+        {
+            command.Execute();
+            _history.Push(command);
+            LastMessage = $"Executat: {command.Description}";
+        }
+
+        public void UndoLastCommand()
+        {
+            if (_history.Count == 0)
+            {
+                LastMessage = "Nu există comenzi pentru Undo.";
+                return;
+            }
+
+            IAdminCommand command = _history.Pop();
+            command.Undo();
+
+            LastMessage = $"Undo: {command.Description}";
         }
     }
 }
