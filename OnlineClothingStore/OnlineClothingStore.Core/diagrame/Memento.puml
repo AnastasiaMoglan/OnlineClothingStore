@@ -1,39 +1,81 @@
 ﻿@startuml
-title Memento Pattern - Shopping Cart Snapshot
+title Memento Pattern - Outfit Designer
 
-class CartItem {
-    +ProductId: int
-    +ProductName: string
-    +Price: decimal
-    +Quantity: int
-    +Clone(): CartItem
+class StoreController {
+    - _outfitDesigner : OutfitDesigner
+    - _outfitHistory : OutfitHistory
+
+    + Memento() : IActionResult
+    + UpdateOutfitDraft(...) : IActionResult
+    + SaveOutfitSnapshot() : IActionResult
+    + UndoOutfit() : IActionResult
+    + RedoOutfit() : IActionResult
+    - ConfigureMementoViewData(message : string) : void
 }
 
-class CartSnapshot {
-    +Items: IReadOnlyList<CartItem>
-    +SavedAt: DateTime
-    +GetDescription(): string
+class OutfitDesigner {
+    - Top : string
+    - Bottom : string
+    - Shoes : string
+    - Accessory : string
+    - ColorPalette : string
+    - Notes : string
+
+    + UpdateOutfit(top, bottom, shoes, accessory, colorPalette, notes) : void
+    + Save() : OutfitDraftMemento
+    + Restore(snapshot : OutfitDraftMemento) : void
 }
 
-class CartOriginator {
-    -items: List<CartItem>
-    +AddItem(item: CartItem): void
-    +RemoveItem(productId: int): void
-    +Save(): CartSnapshot
-    +Restore(snapshot: CartSnapshot): void
-    +GetItems(): IReadOnlyList<CartItem>
-    +GetTotal(): decimal
+class OutfitDraftMemento {
+    - Top : string
+    - Bottom : string
+    - Shoes : string
+    - Accessory : string
+    - ColorPalette : string
+    - Notes : string
+    + SavedAt : DateTime
+
+    + GetLabel() : string
 }
 
-class CartHistory {
-    -undoStack: Stack<CartSnapshot>
-    +SaveState(cart: CartOriginator): void
-    +RestoreLastState(cart: CartOriginator): void
+class OutfitHistory {
+    - undoStack : Stack<OutfitDraftMemento>
+    - redoStack : Stack<OutfitDraftMemento>
+
+    + UndoCount : int
+    + RedoCount : int
+
+    + SaveState(designer : OutfitDesigner) : void
+    + Undo(designer : OutfitDesigner) : bool
+    + Redo(designer : OutfitDesigner) : bool
+    + GetHistoryLabels() : List<string>
 }
 
-CartOriginator --> CartSnapshot
-CartSnapshot --> CartItem
-CartHistory --> CartSnapshot
-CartHistory --> CartOriginator
+StoreController --> OutfitDesigner : folosește
+StoreController --> OutfitHistory : folosește
+
+OutfitDesigner --> OutfitDraftMemento : creează snapshot
+OutfitDesigner --> OutfitDraftMemento : restaurează stare
+
+OutfitHistory o-- OutfitDraftMemento : păstrează istoric
+OutfitHistory --> OutfitDesigner : salvează / restaurează
+
+note right of OutfitDesigner
+Originator
+Deține starea ținutei curente.
+Creează și restaurează snapshot-uri.
+end note
+
+note right of OutfitDraftMemento
+Memento
+Păstrează starea salvată
+fără a expune direct logica internă.
+end note
+
+note right of OutfitHistory
+Caretaker
+Gestionează Undo / Redo
+fără să modifice conținutul snapshot-ului.
+end note
 
 @enduml

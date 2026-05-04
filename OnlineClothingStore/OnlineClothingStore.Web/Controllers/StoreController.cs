@@ -8,7 +8,6 @@ using OnlineClothingStore.App.Structural.Bridge;
 using OnlineClothingStore.App.Structural.Decorator;
 using OnlineClothingStore.App.Structural.Flyweight;
 using OnlineClothingStore.App.Structural.Observer;
-using OnlineClothingStore.App.Structural.Proxy;
 using OnlineClothingStore.App.Structural.Strategy;
 using OnlineClothingStore.Web.Models;
 
@@ -40,6 +39,14 @@ public class StoreController : Controller
     private static readonly List<StockNotification> StockNotifications = new();
 
     private static readonly AdminCommandInvoker CommandInvoker = new();
+
+    // ============================================================
+    // MEMENTO PATTERN - DATE STATICE PENTRU DEMONSTRARE
+    // ============================================================
+
+    private static readonly OutfitDesigner _outfitDesigner = new();
+
+    private static readonly OutfitHistory _outfitHistory = new();
 
     public IActionResult Index()
     {
@@ -621,7 +628,6 @@ public class StoreController : Controller
         decimal totalAfterDiscount = discountCalculator.CalculateTotalAfterDiscount(productsTotal);
 
         IDeliveryMethod selectedDeliveryMethod = CreateDeliveryMethod(deliveryMethod);
-
         DeliveryOrder deliveryOrder = CreateDeliveryOrder(orderType, selectedDeliveryMethod);
 
         string preparationResult = deliveryOrder.PrepareOrder();
@@ -929,6 +935,109 @@ public class StoreController : Controller
     }
 
     // ============================================================
+    // MEMENTO PATTERN
+    // ============================================================
+
+    public IActionResult Memento()
+    {
+        ConfigureMementoViewData(
+            message: "Modifica tinuta, salveaza snapshot-uri si testeaza Undo / Redo."
+        );
+
+        AddLayoutCounters();
+
+        return View();
+    }
+
+    [HttpPost]
+    public IActionResult UpdateOutfitDraft(
+        string top,
+        string bottom,
+        string shoes,
+        string accessory,
+        string colorPalette,
+        string notes)
+    {
+        top = string.IsNullOrWhiteSpace(top) ? "Tricou basic" : top;
+        bottom = string.IsNullOrWhiteSpace(bottom) ? "Jeans albastri" : bottom;
+        shoes = string.IsNullOrWhiteSpace(shoes) ? "Sneakers albi" : shoes;
+        accessory = string.IsNullOrWhiteSpace(accessory) ? "Geanta mica" : accessory;
+        colorPalette = string.IsNullOrWhiteSpace(colorPalette) ? "Blue casual" : colorPalette;
+        notes = string.IsNullOrWhiteSpace(notes) ? "Tinuta de zi, lejera." : notes;
+
+        _outfitDesigner.UpdateOutfit(
+            top,
+            bottom,
+            shoes,
+            accessory,
+            colorPalette,
+            notes
+        );
+
+        TempData["MementoMessage"] =
+            "Tinuta a fost modificata. Pentru a pastra aceasta versiune, apasa Salveaza snapshot.";
+
+        return RedirectToAction(nameof(Memento));
+    }
+
+    [HttpPost]
+    public IActionResult SaveOutfitSnapshot()
+    {
+        _outfitHistory.SaveState(_outfitDesigner);
+
+        TempData["MementoMessage"] =
+            "Snapshot salvat. Starea curenta a tinutei a fost memorata.";
+
+        return RedirectToAction(nameof(Memento));
+    }
+
+    [HttpPost]
+    public IActionResult UndoOutfit()
+    {
+        bool restored = _outfitHistory.Undo(_outfitDesigner);
+
+        TempData["MementoMessage"] = restored
+            ? "Undo realizat. Tinuta a revenit la o stare salvata anterior."
+            : "Nu exista snapshot-uri pentru Undo.";
+
+        return RedirectToAction(nameof(Memento));
+    }
+
+    [HttpPost]
+    public IActionResult RedoOutfit()
+    {
+        bool restored = _outfitHistory.Redo(_outfitDesigner);
+
+        TempData["MementoMessage"] = restored
+            ? "Redo realizat. Tinuta a fost restaurata inainte."
+            : "Nu exista snapshot-uri pentru Redo.";
+
+        return RedirectToAction(nameof(Memento));
+    }
+
+    private void ConfigureMementoViewData(string message)
+    {
+        ViewBag.OutfitTop = _outfitDesigner.Top;
+        ViewBag.OutfitBottom = _outfitDesigner.Bottom;
+        ViewBag.OutfitShoes = _outfitDesigner.Shoes;
+        ViewBag.OutfitAccessory = _outfitDesigner.Accessory;
+        ViewBag.OutfitColorPalette = _outfitDesigner.ColorPalette;
+        ViewBag.OutfitNotes = _outfitDesigner.Notes;
+
+        ViewBag.UndoCount = _outfitHistory.UndoCount;
+        ViewBag.RedoCount = _outfitHistory.RedoCount;
+        ViewBag.SnapshotLabels = _outfitHistory.GetHistoryLabels();
+
+        ViewBag.MementoMessage = TempData["MementoMessage"] ?? message;
+
+        ViewBag.MementoInfo =
+            "Memento salveaza starea interna a obiectului OutfitDesigner intr-un snapshot, fara ca View-ul sau Controller-ul sa modifice direct continutul snapshot-ului.";
+
+        ViewBag.MementoRoles =
+            "OutfitDesigner este Originator, OutfitDraftMemento este Memento, iar OutfitHistory este Caretaker.";
+    }
+
+    // ============================================================
     // PROXY PATTERN
     // ============================================================
 
@@ -1102,10 +1211,10 @@ public class StoreController : Controller
             _newPrice = newPrice < 0 ? 0 : newPrice;
         }
 
-        public string Name => "Modificare preț";
+        public string Name => "Modificare pret";
 
         public string Description =>
-            $"Produsul {_product.Name}: preț schimbat de la {_oldPrice} MDL la {_newPrice} MDL.";
+            $"Produsul {_product.Name}: pret schimbat de la {_oldPrice} MDL la {_newPrice} MDL.";
 
         public void Execute()
         {
@@ -1124,7 +1233,7 @@ public class StoreController : Controller
 
         public IReadOnlyList<IAdminCommand> History => _history.ToList();
 
-        public string LastMessage { get; private set; } = "Nu a fost executată nicio comandă.";
+        public string LastMessage { get; private set; } = "Nu a fost executata nicio comanda.";
 
         public void ExecuteCommand(IAdminCommand command)
         {
@@ -1137,7 +1246,7 @@ public class StoreController : Controller
         {
             if (_history.Count == 0)
             {
-                LastMessage = "Nu există comenzi pentru Undo.";
+                LastMessage = "Nu exista comenzi pentru Undo.";
                 return;
             }
 
@@ -1145,6 +1254,145 @@ public class StoreController : Controller
             command.Undo();
 
             LastMessage = $"Undo: {command.Description}";
+        }
+    }
+
+    // ============================================================
+    // CLASE PENTRU MEMENTO PATTERN
+    // ============================================================
+
+    public class OutfitDesigner
+    {
+        public string Top { get; private set; } = "Tricou basic BlueWear";
+        public string Bottom { get; private set; } = "Jeans slim fit";
+        public string Shoes { get; private set; } = "Sneakers white";
+        public string Accessory { get; private set; } = "Geanta casual";
+        public string ColorPalette { get; private set; } = "Albastru + Alb";
+        public string Notes { get; private set; } = "Tinuta casual pentru oras.";
+
+        public void UpdateOutfit(
+            string top,
+            string bottom,
+            string shoes,
+            string accessory,
+            string colorPalette,
+            string notes)
+        {
+            Top = top;
+            Bottom = bottom;
+            Shoes = shoes;
+            Accessory = accessory;
+            ColorPalette = colorPalette;
+            Notes = notes;
+        }
+
+        public OutfitDraftMemento Save()
+        {
+            return new OutfitDraftMemento(
+                Top,
+                Bottom,
+                Shoes,
+                Accessory,
+                ColorPalette,
+                Notes
+            );
+        }
+
+        public void Restore(OutfitDraftMemento snapshot)
+        {
+            Top = snapshot.Top;
+            Bottom = snapshot.Bottom;
+            Shoes = snapshot.Shoes;
+            Accessory = snapshot.Accessory;
+            ColorPalette = snapshot.ColorPalette;
+            Notes = snapshot.Notes;
+        }
+    }
+
+    public sealed class OutfitDraftMemento
+    {
+        internal string Top { get; }
+        internal string Bottom { get; }
+        internal string Shoes { get; }
+        internal string Accessory { get; }
+        internal string ColorPalette { get; }
+        internal string Notes { get; }
+
+        public DateTime SavedAt { get; }
+
+        internal OutfitDraftMemento(
+            string top,
+            string bottom,
+            string shoes,
+            string accessory,
+            string colorPalette,
+            string notes)
+        {
+            Top = top;
+            Bottom = bottom;
+            Shoes = shoes;
+            Accessory = accessory;
+            ColorPalette = colorPalette;
+            Notes = notes;
+            SavedAt = DateTime.Now;
+        }
+
+        public string GetLabel()
+        {
+            return $"Snapshot salvat la {SavedAt:HH:mm:ss}";
+        }
+    }
+
+    public class OutfitHistory
+    {
+        private readonly Stack<OutfitDraftMemento> _undoStack = new();
+        private readonly Stack<OutfitDraftMemento> _redoStack = new();
+
+        public int UndoCount => _undoStack.Count;
+
+        public int RedoCount => _redoStack.Count;
+
+        public void SaveState(OutfitDesigner designer)
+        {
+            _undoStack.Push(designer.Save());
+            _redoStack.Clear();
+        }
+
+        public bool Undo(OutfitDesigner designer)
+        {
+            if (_undoStack.Count == 0)
+            {
+                return false;
+            }
+
+            _redoStack.Push(designer.Save());
+
+            OutfitDraftMemento previousState = _undoStack.Pop();
+            designer.Restore(previousState);
+
+            return true;
+        }
+
+        public bool Redo(OutfitDesigner designer)
+        {
+            if (_redoStack.Count == 0)
+            {
+                return false;
+            }
+
+            _undoStack.Push(designer.Save());
+
+            OutfitDraftMemento nextState = _redoStack.Pop();
+            designer.Restore(nextState);
+
+            return true;
+        }
+
+        public List<string> GetHistoryLabels()
+        {
+            return _undoStack
+                .Select(snapshot => snapshot.GetLabel())
+                .ToList();
         }
     }
 }

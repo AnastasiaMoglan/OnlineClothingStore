@@ -12,7 +12,10 @@
         <p>Verifica produsele alese si continua spre checkout.</p>
     </div>
 
-    <a href="/Store/Catalog" class="btn secondary">Continua cumparaturile</a>
+    <div class="hero-actions">
+        <a href="/Store/Catalog" class="btn secondary">Continua cumparaturile</a>
+        <a asp-controller="Store" asp-action="Memento" class="btn primary">Outfit Designer</a>
+    </div>
 </section>
 
 @if (cart.Count == 0)
@@ -20,7 +23,10 @@
     <section class="empty-state">
         <h2>Cosul este gol</h2>
         <p>Adauga produse din catalog pentru a continua comanda.</p>
-        <a href="/Store/Catalog" class="btn primary">Mergi la catalog</a>
+        <div class="summary-actions">
+            <a href="/Store/Catalog" class="btn primary">Mergi la catalog</a>
+            <a asp-controller="Store" asp-action="Memento" class="btn secondary">Creeaza tinuta</a>
+        </div>
     </section>
 }
 else
@@ -61,6 +67,7 @@ else
 
         <div class="summary-actions">
             <a href="/Store/ClearCart" class="btn secondary">Goleste cosul</a>
+            <a asp-controller="Store" asp-action="Memento" class="btn secondary">Creeaza tinuta</a>
             <a href="/Store/Checkout" class="btn primary">Checkout</a>
         </div>
     </section>

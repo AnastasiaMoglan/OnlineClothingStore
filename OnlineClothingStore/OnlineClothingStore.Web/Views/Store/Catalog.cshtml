@@ -29,6 +29,18 @@
     }
 </section>
 
+<section class="catalog-outfit-option">
+    <div>
+        <span class="section-kicker">Memento</span>
+        <h2>Construiește o ținută</h2>
+        <p>Testează Outfit Designer: modifică ținuta curentă, salvează snapshot-uri și folosește Undo / Redo.</p>
+    </div>
+
+    <a asp-controller="Store" asp-action="Memento" class="btn primary">
+        Outfit Designer
+    </a>
+</section>
+
 <section class="product-grid">
     @foreach (var product in products)
     {
