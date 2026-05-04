@@ -1,0 +1,66 @@
+﻿@startuml
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam class {
+    BackgroundColor #EEF6FF
+    BorderColor #2563EB
+    ArrowColor #1D4ED8
+}
+
+title Iterator Pattern - OnlineClothingStore
+
+interface IOrderIterator {
+    +HasNext() : bool
+    +Next() : OrderReviewItem
+}
+
+interface IOrderCollection {
+    +CreateIterator() : IOrderIterator
+}
+
+class OrderReviewItem {
+    +Id : int
+    +CustomerName : string
+    +ProductName : string
+    +TotalPrice : decimal
+    +Status : string
+}
+
+class OrderReviewCollection {
+    -_orders : List<OrderReviewItem>
+    +AddOrder(order : OrderReviewItem) : void
+    +GetOrders() : IReadOnlyList<OrderReviewItem>
+    +CreateIterator() : IOrderIterator
+}
+
+class PendingOrderIterator {
+    -_orders : List<OrderReviewItem>
+    -_position : int
+    +HasNext() : bool
+    +Next() : OrderReviewItem
+}
+
+class OrderReviewService {
+    +GetPendingOrdersForAdmin() : IReadOnlyList<OrderReviewItem>
+}
+
+class StoreController {
+    +Iterator() : IActionResult
+}
+
+class IteratorView {
+    +Model : IReadOnlyList<OrderReviewItem>
+}
+
+IOrderCollection <|.. OrderReviewCollection
+IOrderIterator <|.. PendingOrderIterator
+
+OrderReviewCollection o-- OrderReviewItem
+OrderReviewCollection ..> PendingOrderIterator : creates
+PendingOrderIterator --> OrderReviewItem : returns
+OrderReviewService --> OrderReviewCollection : uses
+OrderReviewService --> IOrderIterator : uses
+StoreController --> OrderReviewService : calls
+IteratorView --> OrderReviewItem : displays
+
+@enduml

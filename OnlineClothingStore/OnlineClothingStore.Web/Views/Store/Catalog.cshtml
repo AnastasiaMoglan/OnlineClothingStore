@@ -5,6 +5,9 @@
     var products = ViewBag.ProductCards;
     var categories = ViewBag.Categories;
     string selectedCategory = ViewBag.SelectedCategory;
+    decimal? selectedMinPrice = ViewBag.SelectedMinPrice;
+    decimal? selectedMaxPrice = ViewBag.SelectedMaxPrice;
+    string selectedSortBy = ViewBag.SelectedSortBy;
 }
 
 <section class="catalog-header-clean">
@@ -16,17 +19,137 @@
 </section>
 
 <section class="filters catalog-filters-clean">
-    <a class="filter-link @(selectedCategory == "Toate" ? "active" : "")" href="/Store/Catalog">
+    <a class="filter-link @(selectedCategory == "Toate" ? "active" : "")"
+       asp-controller="Store"
+       asp-action="Catalog"
+       asp-route-minPrice="@selectedMinPrice"
+       asp-route-maxPrice="@selectedMaxPrice"
+       asp-route-sortBy="@selectedSortBy">
         Toate
     </a>
 
     @foreach (var category in categories)
     {
         <a class="filter-link @(selectedCategory == category ? "active" : "")"
-           href="/Store/Catalog?category=@category">
+           asp-controller="Store"
+           asp-action="Catalog"
+           asp-route-category="@category"
+           asp-route-minPrice="@selectedMinPrice"
+           asp-route-maxPrice="@selectedMaxPrice"
+           asp-route-sortBy="@selectedSortBy">
             @category
         </a>
     }
+</section>
+
+<section class="catalog-filter-panel">
+    <div class="catalog-filter-heading">
+        <div>
+            <span class="section-kicker">Filtrare catalog</span>
+            <h2>Ajustează lista de produse</h2>
+        </div>
+
+        <strong>@ViewBag.IteratorReturnedCount produse găsite</strong>
+    </div>
+
+    <form asp-controller="Store" asp-action="Catalog" method="get" class="catalog-filter-form">
+        @if (selectedCategory != "Toate")
+        {
+            <input type="hidden" name="category" value="@selectedCategory" />
+        }
+
+        <div class="filter-group price-range-group">
+            <span class="filter-group-title">Interval de preț</span>
+
+            <div class="price-range-fields">
+                <div class="filter-field">
+                    <label for="minPrice">Minim</label>
+                    <input id="minPrice"
+                           name="minPrice"
+                           type="number"
+                           min="0"
+                           step="1"
+                           value="@selectedMinPrice"
+                           placeholder="300" />
+                </div>
+
+                <div class="filter-field">
+                    <label for="maxPrice">Maxim</label>
+                    <input id="maxPrice"
+                           name="maxPrice"
+                           type="number"
+                           min="0"
+                           step="1"
+                           value="@selectedMaxPrice"
+                           placeholder="1000" />
+                </div>
+            </div>
+        </div>
+
+        <div class="filter-group">
+            <span class="filter-group-title">Sortare după culoare</span>
+
+            <div class="sort-choice-group">
+                <label class="sort-choice @(selectedSortBy == "none" ? "active" : "")">
+                    <input type="radio"
+                           name="sortBy"
+                           value="none"
+                           checked="@(selectedSortBy == "none" ? "checked" : null)" />
+                    Fără sortare
+                </label>
+
+                <label class="sort-choice @(selectedSortBy == "colorAsc" ? "active" : "")">
+                    <input type="radio"
+                           name="sortBy"
+                           value="colorAsc"
+                           checked="@(selectedSortBy == "colorAsc" ? "checked" : null)" />
+                    Culoare A-Z
+                </label>
+
+                <label class="sort-choice @(selectedSortBy == "colorDesc" ? "active" : "")">
+                    <input type="radio"
+                           name="sortBy"
+                           value="colorDesc"
+                           checked="@(selectedSortBy == "colorDesc" ? "checked" : null)" />
+                    Culoare Z-A
+                </label>
+            </div>
+        </div>
+
+        <div class="catalog-filter-actions">
+            <button type="submit" class="btn primary">Aplica filtrele</button>
+            <a asp-controller="Store"
+               asp-action="Catalog"
+               asp-route-category="@(selectedCategory == "Toate" ? null : selectedCategory)"
+               class="btn secondary">
+                Reseteaza
+            </a>
+        </div>
+    </form>
+</section>
+
+<section class="iterator-catalog-panel">
+    <div>
+        <span class="section-kicker">Iterator</span>
+        <h2>Catalog parcurs produs cu produs</h2>
+        <p>@ViewBag.IteratorInfo</p>
+        <p class="iterator-roles">@ViewBag.IteratorRoles</p>
+    </div>
+
+    <div class="iterator-stats">
+        <div>
+            <span>Filtru curent</span>
+            <strong>@ViewBag.IteratorFilterLabel</strong>
+        </div>
+        <div>
+            <span>Produse parcurse</span>
+            <strong>@ViewBag.IteratorVisitedCount</strong>
+        </div>
+        <div>
+            <span>Produse afisate</span>
+            <strong>@ViewBag.IteratorReturnedCount</strong>
+        </div>
+    </div>
 </section>
 
 <section class="catalog-outfit-option">

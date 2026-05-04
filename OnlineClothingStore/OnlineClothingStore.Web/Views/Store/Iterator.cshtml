@@ -1,0 +1,61 @@
+﻿@model IReadOnlyList<OnlineClothingStore.App.Behavioral.Iterator.OrderReviewItem>
+
+@{
+    ViewData["Title"] = "Iterator - Revizuire comenzi";
+}
+
+<section class="pattern-page">
+    <div class="pattern-header">
+        <p class="pattern-label">Behavioral Pattern</p>
+        <h1>Iterator - Revizuirea comenzilor</h1>
+        <p>
+            Șablonul Iterator permite parcurgerea comenzilor una câte una,
+            fără ca pagina web sau adminul să cunoască structura internă a listei.
+        </p>
+    </div>
+
+    <div class="iterator-demo">
+        <div class="iterator-info-card">
+            <h2>Ce demonstrează această pagină?</h2>
+            <p>
+                În această pagină sunt afișate doar comenzile cu statusul
+                <strong>Pending</strong>. Lista completă conține și comenzi aprobate
+                sau anulate, dar iteratorul le sare automat.
+            </p>
+
+            <ul>
+                <li><strong>OrderReviewCollection</strong> păstrează comenzile.</li>
+                <li><strong>PendingOrderIterator</strong> parcurge comenzile.</li>
+                <li><strong>StoreController</strong> primește doar rezultatul final.</li>
+                <li><strong>View-ul</strong> afișează comenzile pentru admin.</li>
+            </ul>
+        </div>
+
+        <div class="orders-list">
+            @if (Model.Count == 0)
+            {
+                <div class="empty-card">
+                    Nu există comenzi în așteptare.
+                </div>
+            }
+            else
+            {
+                foreach (var order in Model)
+                {
+                    <div class="order-card">
+                        <div>
+                            <span class="order-id">Comanda #@order.Id</span>
+                            <h3>@order.ProductName</h3>
+                            <p>Client: @order.CustomerName</p>
+                        </div>
+
+                        <div class="order-side">
+                            <span class="order-price">@order.TotalPrice lei</span>
+                            <span class="order-status">@order.Status</span>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</section>

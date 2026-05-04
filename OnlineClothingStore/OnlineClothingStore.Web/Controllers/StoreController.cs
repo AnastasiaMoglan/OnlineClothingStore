@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using OnlineClothingStore.App.Behavioral.Iterator;
 using OnlineClothingStore.App.Structural.Bridge;
 using OnlineClothingStore.App.Structural.Decorator;
 using OnlineClothingStore.App.Structural.Flyweight;
@@ -58,25 +59,55 @@ public class StoreController : Controller
         return View();
     }
 
-    public IActionResult Catalog(string? category)
+    public IActionResult Catalog(
+        string? category,
+        decimal? minPrice,
+        decimal? maxPrice,
+        string? sortBy)
     {
-        List<StoreProduct> filteredProducts = string.IsNullOrWhiteSpace(category)
-            ? Products
-            : Products.Where(p => p.Category == category).ToList();
+        NormalizePriceRange(ref minPrice, ref maxPrice);
+
+        StoreProductCatalog catalog = new(Products);
+        IStoreProductIterator catalogIterator = catalog.CreateIterator(
+            category,
+            minPrice,
+            maxPrice,
+            sortBy);
+        List<StoreProduct> filteredProducts = new();
+
+        while (catalogIterator.HasNext())
+        {
+            filteredProducts.Add(catalogIterator.Next());
+        }
 
         List<ProductViewModel> productCards = BuildProductCards(filteredProducts);
 
         ViewBag.ProductCards = productCards;
         ViewBag.Categories = Products.Select(p => p.Category).Distinct().ToList();
         ViewBag.SelectedCategory = category ?? "Toate";
+        ViewBag.SelectedMinPrice = minPrice;
+        ViewBag.SelectedMaxPrice = maxPrice;
+        ViewBag.SelectedSortBy = sortBy ?? "none";
 
         ViewBag.TotalCards = productCards.Count;
         ViewBag.SharedStyles = StyleFactory.CreatedStylesCount;
         ViewBag.SavedObjects = productCards.Count - StyleFactory.CreatedStylesCount;
+        ViewBag.IteratorVisitedCount = catalogIterator.VisitedCount;
+        ViewBag.IteratorReturnedCount = productCards.Count;
+        ViewBag.IteratorFilterLabel = BuildIteratorFilterLabel(
+            category,
+            minPrice,
+            maxPrice,
+            sortBy);
 
         ViewBag.FlyweightInfo =
             $"In catalog sunt {productCards.Count} produse afisate, dar stilurile cardurilor sunt partajate pe categorii. " +
             $"Factory-ul a creat doar {StyleFactory.CreatedStylesCount} obiecte de stil.";
+
+        ViewBag.IteratorInfo =
+            "Catalogul foloseste Iterator pentru a parcurge produsele pe rand si pentru a afisa doar produsele care respecta filtrul ales.";
+        ViewBag.IteratorRoles =
+            "StoreProductCatalog este colectia, ProductCatalogIterator parcurge produsele, iar Catalog foloseste doar metoda HasNext / Next.";
 
         AddLayoutCounters();
 
@@ -1038,6 +1069,36 @@ public class StoreController : Controller
     }
 
     // ============================================================
+    // ITERATOR PATTERN
+    // ============================================================
+
+    public IActionResult Iterator()
+    {
+        string role = HttpContext.Session.GetString("role") ?? "Guest";
+
+        if (role != "Manager")
+        {
+            return RedirectToAction(nameof(AdminLogin));
+        }
+
+        OrderReviewService service = new();
+        IReadOnlyList<OrderReviewItem> pendingOrders = service.GetPendingOrdersForAdmin();
+
+        ViewBag.IteratorInfo =
+            "Iterator permite parcurgerea comenzilor una cate una, fara ca pagina web sau controllerul sa cunoasca structura interna a colectiei.";
+
+        ViewBag.IteratorRoles =
+            "OrderReviewCollection este colectia, PendingOrderIterator este iteratorul concret, iar OrderReviewService foloseste iteratorul pentru a returna doar comenzile cu status Pending.";
+
+        ViewBag.IteratorResult =
+            $"Iteratorul a parcurs colectia de comenzi si a returnat {pendingOrders.Count} comenzi in asteptare.";
+
+        AddLayoutCounters();
+
+        return View(pendingOrders);
+    }
+
+    // ============================================================
     // PROXY PATTERN
     // ============================================================
 
@@ -1073,6 +1134,179 @@ public class StoreController : Controller
         }
 
         return cards;
+    }
+
+    private static string BuildIteratorFilterLabel(
+        string? category,
+        decimal? minPrice,
+        decimal? maxPrice,
+        string? sortBy)
+    {
+        List<string> filters = new();
+
+        if (!string.IsNullOrWhiteSpace(category))
+        {
+            filters.Add($"categoria {category}");
+        }
+
+        if (minPrice.HasValue && maxPrice.HasValue)
+        {
+            filters.Add($"pret intre {minPrice.Value} si {maxPrice.Value} MDL");
+        }
+        else if (minPrice.HasValue)
+        {
+            filters.Add($"pret minim {minPrice.Value} MDL");
+        }
+        else if (maxPrice.HasValue)
+        {
+            filters.Add($"pret maxim {maxPrice.Value} MDL");
+        }
+
+        if (sortBy == "colorAsc")
+        {
+            filters.Add("culoare A-Z");
+        }
+        else if (sortBy == "colorDesc")
+        {
+            filters.Add("culoare Z-A");
+        }
+
+        return filters.Count == 0
+            ? "toate produsele"
+            : string.Join(" + ", filters);
+    }
+
+    private static void NormalizePriceRange(ref decimal? minPrice, ref decimal? maxPrice)
+    {
+        if (minPrice.HasValue && minPrice.Value < 0)
+        {
+            minPrice = 0;
+        }
+
+        if (maxPrice.HasValue && maxPrice.Value < 0)
+        {
+            maxPrice = 0;
+        }
+
+        if (minPrice.HasValue && maxPrice.HasValue && minPrice.Value > maxPrice.Value)
+        {
+            (minPrice, maxPrice) = (maxPrice, minPrice);
+        }
+    }
+
+    public interface IStoreProductIterator
+    {
+        int VisitedCount { get; }
+
+        bool HasNext();
+
+        StoreProduct Next();
+    }
+
+    public sealed class StoreProductCatalog
+    {
+        private readonly List<StoreProduct> _products;
+
+        public StoreProductCatalog(List<StoreProduct> products)
+        {
+            _products = products;
+        }
+
+        public IStoreProductIterator CreateIterator(
+            string? category,
+            decimal? minPrice,
+            decimal? maxPrice,
+            string? sortBy)
+        {
+            return new ProductCatalogIterator(
+                _products,
+                category,
+                minPrice,
+                maxPrice,
+                sortBy);
+        }
+    }
+
+    public sealed class ProductCatalogIterator : IStoreProductIterator
+    {
+        private readonly List<StoreProduct> _products;
+        private readonly string? _category;
+        private readonly decimal? _minPrice;
+        private readonly decimal? _maxPrice;
+        private int _position;
+
+        public int VisitedCount { get; private set; }
+
+        public ProductCatalogIterator(
+            List<StoreProduct> products,
+            string? category,
+            decimal? minPrice,
+            decimal? maxPrice,
+            string? sortBy)
+        {
+            _products = SortProducts(products, sortBy);
+            _category = string.IsNullOrWhiteSpace(category) ? null : category;
+            _minPrice = minPrice;
+            _maxPrice = maxPrice;
+            _position = 0;
+        }
+
+        public bool HasNext()
+        {
+            while (_position < _products.Count)
+            {
+                StoreProduct product = _products[_position];
+
+                if (MatchesFilter(product))
+                {
+                    return true;
+                }
+
+                _position++;
+                VisitedCount++;
+            }
+
+            return false;
+        }
+
+        public StoreProduct Next()
+        {
+            if (!HasNext())
+            {
+                throw new InvalidOperationException("Nu mai exista produse pentru filtrul selectat.");
+            }
+
+            StoreProduct currentProduct = _products[_position];
+            _position++;
+            VisitedCount++;
+
+            return currentProduct;
+        }
+
+        private bool MatchesFilter(StoreProduct product)
+        {
+            bool matchesCategory = _category == null || product.Category == _category;
+            bool matchesMinPrice = !_minPrice.HasValue || product.Price >= _minPrice.Value;
+            bool matchesMaxPrice = !_maxPrice.HasValue || product.Price <= _maxPrice.Value;
+
+            return matchesCategory && matchesMinPrice && matchesMaxPrice;
+        }
+
+        private static List<StoreProduct> SortProducts(List<StoreProduct> products, string? sortBy)
+        {
+            return sortBy switch
+            {
+                "colorAsc" => products
+                    .OrderBy(product => product.Color)
+                    .ThenBy(product => product.Name)
+                    .ToList(),
+                "colorDesc" => products
+                    .OrderByDescending(product => product.Color)
+                    .ThenBy(product => product.Name)
+                    .ToList(),
+                _ => products.ToList()
+            };
+        }
     }
 
     private static List<CategoryStyleEditViewModel> GetCategoryStyles()
