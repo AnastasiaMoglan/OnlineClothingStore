@@ -1,0 +1,219 @@
+@startuml
+title Online Clothing Store - UML (OOP + SOLID + Lab2: Factory Method + Abstract Factory)
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+'========================
+' DOMAIN - ABSTRACT CLASSES
+'========================
+abstract class Entity {
+  # Id : Guid
+  # Entity()
+}
+
+abstract class Product {
+  # Name : string
+  # Price : decimal
+  # Product(name : string, price : decimal)
+  {abstract} + GetFinalPrice() : decimal
+}
+
+abstract class User {
+  # Username : string
+  # User(username : string)
+  {abstract} + GetRole() : string
+}
+
+abstract class Payment {
+  {abstract} + Pay(amount : decimal) : void
+}
+
+abstract class Discount {
+  {abstract} + Apply(price : decimal) : decimal
+}
+
+'========================
+' DOMAIN - CONCRETE CLASSES
+'========================
+class BasicProduct {
+  # Name : string <<inherited>>
+  # Price : decimal <<inherited>>
+  + BasicProduct(name : string, price : decimal)
+  + GetFinalPrice() : decimal
+}
+
+class ClothingProduct {
+  # Name : string <<inherited>>
+  # Price : decimal <<inherited>>
+  + ClothingProduct(name : string, price : decimal)
+  + GetFinalPrice() : decimal
+}
+
+class Admin {
+  + Admin(username : string)
+  + GetRole() : string
+}
+
+class Customer {
+  + Customer(username : string)
+  + GetRole() : string
+}
+
+class CardPayment {
+  + Pay(amount : decimal) : void
+}
+
+class PercentageDiscount {
+  - _percent : decimal
+  + PercentageDiscount(percent : decimal)
+  + Apply(price : decimal) : decimal
+}
+
+class NoDiscount {
+  + Apply(price : decimal) : decimal
+}
+
+class Cart {
+  - _products : List<Product>
+  + Cart()
+  + AddProduct(product : Product) : void
+  + GetTotal() : decimal
+}
+
+class Order {
+  + Cart : Cart
+  + Discount : Discount
+  + Order(cart : Cart, discount : Discount)
+  + ProcessPayment(payment : Payment) : void
+}
+
+'========================
+' ABSTRACTIONS (Interfaces)
+'========================
+' NOTE: In code you have IRepository<T>.
+' For UML clarity (and PlantUML syntax), we show it as IRepository
+' specialized for Product via method signatures.
+interface IRepository {
+  + Add(item : Product) : void
+  + GetAll() : IEnumerable<Product>
+}
+
+interface IPayable {
+  + ProcessPayment(payment : Payment) : void
+}
+
+'========================
+' INFRASTRUCTURE
+'========================
+class InMemoryProductRepository {
+  - _products : List<Product>
+  + InMemoryProductRepository()
+  + Add(item : Product) : void
+  + GetAll() : IEnumerable<Product>
+}
+
+'========================
+' SERVICES (App Layer)
+'========================
+class ProductService {
+  - _repository : IRepository
+  - _kitFactory : IStoreKitFactory
+  + ProductService(repo : IRepository, kitFactory : IStoreKitFactory)
+  + AddProduct(name : string, price : decimal) : Product
+  + GetFinalPrice(product : Product) : decimal
+}
+
+class CheckoutService {
+  - _paymentFactory : PaymentFactory
+  + CheckoutService(paymentFactory : PaymentFactory)
+  + Checkout(total : decimal) : void
+}
+
+'========================
+' LAB 2 - FACTORY METHOD
+'========================
+abstract class PaymentFactory {
+  {abstract} + CreatePayment() : Payment
+  + Pay(amount : decimal) : void
+}
+
+class CardPaymentFactory {
+  + CreatePayment() : Payment
+}
+
+'========================
+' LAB 2 - ABSTRACT FACTORY
+'========================
+interface IStoreKitFactory {
+  + CreateProduct(name : string, price : decimal) : Product
+  + CreateDiscount() : Discount
+}
+
+class RegularKitFactory {
+  + CreateProduct(name : string, price : decimal) : Product
+  + CreateDiscount() : Discount
+}
+
+class VipKitFactory {
+  + CreateProduct(name : string, price : decimal) : Product
+  + CreateDiscount() : Discount
+}
+
+'========================
+' INHERITANCE / IMPLEMENTATION
+'========================
+Entity <|-- Product
+Entity <|-- User
+
+Product <|-- BasicProduct
+Product <|-- ClothingProduct
+
+User <|-- Admin
+User <|-- Customer
+
+Payment <|-- CardPayment
+Discount <|-- PercentageDiscount
+Discount <|-- NoDiscount
+
+IRepository <|.. InMemoryProductRepository
+IPayable <|.. Order
+
+PaymentFactory <|-- CardPaymentFactory
+
+IStoreKitFactory <|.. RegularKitFactory
+IStoreKitFactory <|.. VipKitFactory
+
+'========================
+' DOMAIN RELATIONSHIPS
+'========================
+Cart *-- "0..*" Product : contains
+Order *-- "1" Cart : owns
+Order o-- "1" Discount : uses
+Order ..> Payment : depends on
+
+'========================
+' CREATIONAL RELATIONSHIPS (creates)
+'========================
+PaymentFactory ..> Payment : creates
+CardPaymentFactory ..> CardPayment : creates
+
+IStoreKitFactory ..> Product : creates
+IStoreKitFactory ..> Discount : creates
+
+RegularKitFactory ..> BasicProduct : creates
+RegularKitFactory ..> NoDiscount : creates
+
+VipKitFactory ..> ClothingProduct : creates
+VipKitFactory ..> PercentageDiscount : creates
+
+'========================
+' DIP - SERVICES DEPEND ON ABSTRACTIONS (uses)
+'========================
+ProductService ..> IRepository : uses
+ProductService ..> IStoreKitFactory : uses
+
+CheckoutService ..> PaymentFactory : uses
+CheckoutService ..> IPayable : calls
+
+@enduml

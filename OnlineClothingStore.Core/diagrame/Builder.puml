@@ -1,0 +1,72 @@
+﻿
+title Builder Pattern - SOLID Version
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam linetype ortho
+
+package "Domain" {
+  abstract class Product {
+    - Name : string
+    - Price : decimal
+    + GetFinalPrice() : decimal
+  }
+
+  class ClothingProduct {
+    - Size : string
+    - Color : string
+    - Material : string
+    - HasCustomPrint : bool
+    - CustomPrintText : string
+    - PremiumPackaging : bool
+    + GetFinalPrice() : decimal
+    + ToString() : string
+  }
+
+  Product <|-- ClothingProduct
+}
+
+package "Builder" {
+  interface IClothingProductBuilder {
+    + Reset() : IClothingProductBuilder
+    + SetName(name : string) : IClothingProductBuilder
+    + SetPrice(price : decimal) : IClothingProductBuilder
+    + SetSize(size : string) : IClothingProductBuilder
+    + SetColor(color : string) : IClothingProductBuilder
+    + SetMaterial(material : string) : IClothingProductBuilder
+    + AddCustomPrint(text : string) : IClothingProductBuilder
+    + EnablePremiumPackaging() : IClothingProductBuilder
+    + Build() : ClothingProduct
+  }
+
+  class CustomClothingProductBuilder {
+    - _name : string
+    - _price : decimal
+    - _size : string
+    - _color : string
+    - _material : string
+    - _hasCustomPrint : bool
+    - _customPrintText : string
+    - _premiumPackaging : bool
+    + Reset() : IClothingProductBuilder
+    + SetName(name : string) : IClothingProductBuilder
+    + SetPrice(price : decimal) : IClothingProductBuilder
+    + SetSize(size : string) : IClothingProductBuilder
+    + SetColor(color : string) : IClothingProductBuilder
+    + SetMaterial(material : string) : IClothingProductBuilder
+    + AddCustomPrint(text : string) : IClothingProductBuilder
+    + EnablePremiumPackaging() : IClothingProductBuilder
+    + Build() : ClothingProduct
+  }
+
+  class ClothingProductDirector {
+    - _builder : IClothingProductBuilder
+    + BuildBasicTShirt() : ClothingProduct
+    + BuildPremiumHoodie() : ClothingProduct
+  }
+
+  IClothingProductBuilder <|.. CustomClothingProductBuilder
+  ClothingProductDirector --> IClothingProductBuilder : depends on
+  CustomClothingProductBuilder --> ClothingProduct : creates
+}
+@enduml

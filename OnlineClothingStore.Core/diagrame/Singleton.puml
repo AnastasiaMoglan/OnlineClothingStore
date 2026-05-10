@@ -1,0 +1,49 @@
+﻿@startuml
+title Singleton Pattern - StoreConfiguration (SOLID analysis)
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam shadowing false
+
+package "Singleton" {
+  class StoreConfiguration <<singleton>> {
+    - _instance : Lazy<StoreConfiguration>
+    - StoreConfiguration()
+    + Instance : StoreConfiguration
+    + StoreName : string
+    + TaxRate : decimal
+    + Currency : string
+    + Configure(name : string, tax : decimal, currency : string) : void
+  }
+}
+
+package "Client" {
+  class Program {
+    + Main() : void
+  }
+}
+
+Program --> StoreConfiguration : directly uses\nStoreConfiguration.Instance
+
+
+
+note bottom of StoreConfiguration
+SOLID observations:
+S - Violated:
+  handles both business state
+  and its own instantiation
+
+O - Violated:
+  private constructor blocks extension
+
+L - Violated:
+  cannot be substituted by subclasses
+
+I - Respected:
+  compact public interface
+
+D - Violated:
+  client depends directly on
+  StoreConfiguration.Instance
+end note
+@enduml

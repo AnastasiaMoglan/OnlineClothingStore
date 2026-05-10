@@ -1,0 +1,28 @@
+﻿@startuml
+skinparam classAttributeIconSize 0
+left to right direction
+
+interface ISubject {
+  +Request(): string
+}
+
+class RealSubject {
+  +Request(): string
+}
+
+class Proxy {
+  -_realSubject: ISubject
+  +Proxy(realSubject: ISubject)
+  +Request(): string
+}
+
+class Client {
+  +Execute(subject: ISubject): void
+}
+
+ISubject <|.. RealSubject
+ISubject <|.. Proxy
+
+Proxy --> ISubject
+Client --> ISubject
+@enduml

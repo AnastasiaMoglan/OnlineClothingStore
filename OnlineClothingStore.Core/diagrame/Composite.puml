@@ -1,0 +1,35 @@
+﻿@startuml
+interface IStoreItem {
+  +Name: string
+  +GetPrice(): decimal
+  +Display(depth: int = 0): void
+}
+
+interface IStoreItemGroup {
+  +Add(item: IStoreItem): void
+  +Remove(item: IStoreItem): void
+  +GetChildren(): IReadOnlyCollection<IStoreItem>
+}
+
+class SingleClothingItem {
+  +Name: string
+  +Price: decimal
+  +GetPrice(): decimal
+  +Display(depth: int = 0): void
+}
+
+class ClothingBundle {
+  -_items: List<IStoreItem>
+  +Name: string
+  +Add(item: IStoreItem): void
+  +Remove(item: IStoreItem): void
+  +GetChildren(): IReadOnlyCollection<IStoreItem>
+  +GetPrice(): decimal
+  +Display(depth: int = 0): void
+}
+
+IStoreItem <|.. SingleClothingItem
+IStoreItem <|.. ClothingBundle
+IStoreItem <|-- IStoreItemGroup
+ClothingBundle --> IStoreItem
+@enduml

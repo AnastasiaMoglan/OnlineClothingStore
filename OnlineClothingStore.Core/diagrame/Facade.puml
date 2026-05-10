@@ -1,0 +1,63 @@
+﻿@startuml
+skinparam classAttributeIconSize 0
+left to right direction
+
+interface IStoreFacade {
+  +PlaceOrder(email: string, prices: List<decimal>): SimpleOrder
+}
+
+class StoreFacade {
+  -_cartService: ICartService
+  -_paymentService: IPaymentService
+  -_notificationService: INotificationService
+  +StoreFacade(cartService: ICartService, paymentService: IPaymentService, notificationService: INotificationService)
+  +PlaceOrder(email: string, prices: List<decimal>): SimpleOrder
+}
+
+interface ICartService {
+  +CalculateTotal(prices: List<decimal>): decimal
+}
+
+class CartService {
+  +CalculateTotal(prices: List<decimal>): decimal
+}
+
+interface IPaymentService {
+  +ProcessPayment(amount: decimal): bool
+}
+
+class PaymentService {
+  +ProcessPayment(amount: decimal): bool
+}
+
+interface INotificationService {
+  +SendConfirmation(email: string): void
+}
+
+class NotificationService {
+  +SendConfirmation(email: string): void
+}
+
+class SimpleOrder {
+  +Total: decimal
+  +SimpleOrder(total: decimal)
+}
+
+IStoreFacade <|.. StoreFacade
+
+ICartService <|.. CartService
+IPaymentService <|.. PaymentService
+INotificationService <|.. NotificationService
+
+StoreFacade --> ICartService
+StoreFacade --> IPaymentService
+StoreFacade --> INotificationService
+StoreFacade --> SimpleOrder
+
+note right of StoreFacade
+Façada expune o singură metodă simplificată:
+PlaceOrder(...)
+și delegă responsabilitățile către subsisteme.
+end note
+
+@enduml

@@ -1,0 +1,93 @@
+﻿@startuml
+title Abstract Factory Pattern (LSP-correct)
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+'========================
+' ABSTRACT PRODUCTS
+'========================
+abstract class Product {
+  # Name : string
+  # Price : decimal
+  + Product(name : string, price : decimal)
+  {abstract} + GetFinalPrice() : decimal
+}
+
+abstract class Discount {
+  {abstract} + Apply(price : decimal) : decimal
+}
+
+'========================
+' CONCRETE PRODUCTS
+'========================
+class BasicProduct {
+  # Name : string <<inherited>>
+  # Price : decimal <<inherited>>
+  + BasicProduct(name : string, price : decimal)
+  + GetFinalPrice() : decimal
+}
+
+class ClothingProduct {
+  # Name : string <<inherited>>
+  # Price : decimal <<inherited>>
+  + ClothingProduct(name : string, price : decimal)
+  + GetFinalPrice() : decimal
+}
+
+'========================
+' CONCRETE DISCOUNTS
+'========================
+class NoDiscount {
+  + Apply(price : decimal) : decimal
+}
+
+class PercentageDiscount {
+  - _percent : decimal
+  + PercentageDiscount(percent : decimal)
+  + Apply(price : decimal) : decimal
+}
+
+'========================
+' ABSTRACT FACTORY
+'========================
+interface IStoreKitFactory {
+  + CreateProduct(name : string, price : decimal) : Product
+  + CreateDiscount() : Discount
+}
+
+'========================
+' CONCRETE FACTORIES
+'========================
+class RegularKitFactory {
+  + CreateProduct(name : string, price : decimal) : Product
+  + CreateDiscount() : Discount
+}
+
+class VipKitFactory {
+  + CreateProduct(name : string, price : decimal) : Product
+  + CreateDiscount() : Discount
+}
+
+'========================
+' RELATIONSHIPS
+'========================
+Product <|-- BasicProduct
+Product <|-- ClothingProduct
+
+Discount <|-- NoDiscount
+Discount <|-- PercentageDiscount
+
+IStoreKitFactory <|.. RegularKitFactory
+IStoreKitFactory <|.. VipKitFactory
+
+IStoreKitFactory ..> Product : creates
+IStoreKitFactory ..> Discount : creates
+
+RegularKitFactory ..> BasicProduct : creates
+RegularKitFactory ..> NoDiscount : creates
+
+VipKitFactory ..> ClothingProduct : creates
+VipKitFactory ..> PercentageDiscount : creates
+
+@enduml
