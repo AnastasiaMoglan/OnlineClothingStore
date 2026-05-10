@@ -4,40 +4,25 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using OnlineClothingStore.App.Behavioral.Iterator;
 using OnlineClothingStore.App.Structural.Bridge;
 using OnlineClothingStore.App.Structural.Decorator;
 using OnlineClothingStore.App.Structural.Flyweight;
 using OnlineClothingStore.App.Structural.Observer;
 using OnlineClothingStore.App.Structural.Strategy;
+using OnlineClothingStore.Web.Data;
 using OnlineClothingStore.Web.Models;
 
 namespace OnlineClothingStore.Web.Controllers;
 
 public class StoreController : Controller
 {
-    private static readonly List<StoreProduct> Products = new()
-    {
-        new StoreProduct(1, "Tricou Oversize Blue", "T-Shirts", 349, "M", "Albastru", 25),
-        new StoreProduct(2, "Tricou Basic White", "T-Shirts", 279, "S", "Alb", 40),
-        new StoreProduct(3, "Jeans Slim Fit", "Jeans", 699, "L", "Denim", 18),
-        new StoreProduct(4, "Jeans Regular Dark", "Jeans", 749, "M", "Albastru inchis", 14),
-        new StoreProduct(5, "Geaca Urban Denim", "Jackets", 1199, "M", "Albastru", 9),
-        new StoreProduct(6, "Hanorac Minimal", "Hoodies", 599, "XL", "Gri", 30),
-        new StoreProduct(7, "Hanorac Street Purple", "Hoodies", 649, "L", "Mov", 16),
-        new StoreProduct(8, "Rochie Eleganta", "Dresses", 899, "S", "Bleumarin", 11),
-        new StoreProduct(9, "Sneakers White", "Shoes", 999, "42", "Alb", 20)
-    };
+    private readonly ApplicationDbContext _context;
 
-    private static readonly List<CartLine> ShoppingCart = new();
-
-    private static readonly List<StoreProduct> WishlistItems = new();
+    private List<StoreProduct> Products => _context.Products.ToList();
 
     private static readonly ProductCardStyleFactory StyleFactory = new();
-
-    private static readonly ProductStockSubject StockSubject = new();
-
-    private static readonly List<StockNotification> StockNotifications = new();
 
     private static readonly AdminCommandInvoker CommandInvoker = new();
 
@@ -48,6 +33,11 @@ public class StoreController : Controller
     private static readonly OutfitDesigner _outfitDesigner = new();
 
     private static readonly OutfitHistory _outfitHistory = new();
+
+    public StoreController(ApplicationDbContext context)
+    {
+        _context = context;
+    }
 
     public IActionResult Index()
     {
@@ -183,8 +173,8 @@ public class StoreController : Controller
         ViewBag.Role = role;
         ViewBag.CategoryStyles = GetCategoryStyles();
         ViewBag.Products = Products;
-        ViewBag.Observers = StockSubject.GetObservers();
-        ViewBag.StockNotifications = StockNotifications;
+        ViewBag.Observers = GetStockObservers();
+        ViewBag.StockNotifications = GetStockNotifications();
         ViewBag.CommandHistory = CommandInvoker.History;
         ViewBag.CommandLastMessage = CommandInvoker.LastMessage;
 
@@ -237,6 +227,8 @@ public class StoreController : Controller
             );
 
             CommandInvoker.ExecuteCommand(command);
+            LogAdminCommand(command, isUndo: false);
+            _context.SaveChanges();
         }
 
         return RedirectToAction(nameof(Admin));
@@ -248,16 +240,22 @@ public class StoreController : Controller
 
         if (product != null && product.StockQuantity > 0)
         {
-            CartLine? existing = ShoppingCart.FirstOrDefault(c => c.Product.Id == id);
+            CartItem? existing = _context.CartItems.FirstOrDefault(c => c.ProductId == id);
 
             if (existing == null)
             {
-                ShoppingCart.Add(new CartLine(product, 1));
+                _context.CartItems.Add(new CartItem
+                {
+                    ProductId = product.Id,
+                    Quantity = 1
+                });
             }
             else if (existing.Quantity < product.StockQuantity)
             {
                 existing.Quantity++;
             }
+
+            _context.SaveChanges();
         }
 
         return RedirectToAction(nameof(Cart));
@@ -265,8 +263,10 @@ public class StoreController : Controller
 
     public IActionResult Cart()
     {
-        ViewBag.Cart = ShoppingCart;
-        ViewBag.Total = ShoppingCart.Sum(c => c.Product.Price * c.Quantity);
+        List<CartLine> cart = GetCartLines();
+
+        ViewBag.Cart = cart;
+        ViewBag.Total = cart.Sum(c => c.Product.Price * c.Quantity);
 
         AddLayoutCounters();
 
@@ -275,13 +275,16 @@ public class StoreController : Controller
 
     public IActionResult IncreaseQuantity(int id)
     {
-        CartLine? line = ShoppingCart.FirstOrDefault(c => c.Product.Id == id);
+        CartItem? line = _context.CartItems
+            .Include(c => c.Product)
+            .FirstOrDefault(c => c.ProductId == id);
 
         if (line != null)
         {
             if (line.Quantity < line.Product.StockQuantity)
             {
                 line.Quantity++;
+                _context.SaveChanges();
             }
         }
 
@@ -290,7 +293,7 @@ public class StoreController : Controller
 
     public IActionResult DecreaseQuantity(int id)
     {
-        CartLine? line = ShoppingCart.FirstOrDefault(c => c.Product.Id == id);
+        CartItem? line = _context.CartItems.FirstOrDefault(c => c.ProductId == id);
 
         if (line != null)
         {
@@ -298,8 +301,10 @@ public class StoreController : Controller
 
             if (line.Quantity <= 0)
             {
-                ShoppingCart.Remove(line);
+                _context.CartItems.Remove(line);
             }
+
+            _context.SaveChanges();
         }
 
         return RedirectToAction(nameof(Cart));
@@ -307,11 +312,12 @@ public class StoreController : Controller
 
     public IActionResult RemoveFromCart(int id)
     {
-        CartLine? line = ShoppingCart.FirstOrDefault(c => c.Product.Id == id);
+        CartItem? line = _context.CartItems.FirstOrDefault(c => c.ProductId == id);
 
         if (line != null)
         {
-            ShoppingCart.Remove(line);
+            _context.CartItems.Remove(line);
+            _context.SaveChanges();
         }
 
         return RedirectToAction(nameof(Cart));
@@ -319,14 +325,15 @@ public class StoreController : Controller
 
     public IActionResult ClearCart()
     {
-        ShoppingCart.Clear();
+        _context.CartItems.RemoveRange(_context.CartItems);
+        _context.SaveChanges();
 
         return RedirectToAction(nameof(Cart));
     }
 
     public IActionResult Wishlist()
     {
-        ViewBag.Wishlist = WishlistItems;
+        ViewBag.Wishlist = GetWishlistProducts();
 
         AddLayoutCounters();
 
@@ -337,9 +344,13 @@ public class StoreController : Controller
     {
         StoreProduct? product = Products.FirstOrDefault(p => p.Id == id);
 
-        if (product != null && WishlistItems.All(p => p.Id != id))
+        if (product != null && !_context.WishlistItems.Any(p => p.ProductId == id))
         {
-            WishlistItems.Add(product);
+            _context.WishlistItems.Add(new WishlistItem
+            {
+                ProductId = product.Id
+            });
+            _context.SaveChanges();
         }
 
         return RedirectToAction(nameof(Wishlist));
@@ -347,11 +358,12 @@ public class StoreController : Controller
 
     public IActionResult RemoveFromWishlist(int id)
     {
-        StoreProduct? product = WishlistItems.FirstOrDefault(p => p.Id == id);
+        WishlistItem? item = _context.WishlistItems.FirstOrDefault(p => p.ProductId == id);
 
-        if (product != null)
+        if (item != null)
         {
-            WishlistItems.Remove(product);
+            _context.WishlistItems.Remove(item);
+            _context.SaveChanges();
         }
 
         return RedirectToAction(nameof(Wishlist));
@@ -359,7 +371,8 @@ public class StoreController : Controller
 
     public IActionResult Checkout()
     {
-        decimal productsTotal = ShoppingCart.Sum(c => c.Product.Price * c.Quantity);
+        List<CartLine> cart = GetCartLines();
+        decimal productsTotal = cart.Sum(c => c.Product.Price * c.Quantity);
 
         IDiscountStrategy discountStrategy = CreateDiscountStrategy("none");
         DiscountCalculator discountCalculator = new(discountStrategy);
@@ -367,7 +380,7 @@ public class StoreController : Controller
         decimal discountValue = discountCalculator.CalculateDiscount(productsTotal);
         decimal totalAfterDiscount = discountCalculator.CalculateTotalAfterDiscount(productsTotal);
 
-        ViewBag.Cart = ShoppingCart;
+        ViewBag.Cart = cart;
         ViewBag.Total = productsTotal;
 
         ConfigureStrategyViewData(
@@ -427,7 +440,8 @@ public class StoreController : Controller
             ? "none"
             : discountType;
 
-        decimal productsTotal = ShoppingCart.Sum(c => c.Product.Price * c.Quantity);
+        List<CartLine> cart = GetCartLines();
+        decimal productsTotal = cart.Sum(c => c.Product.Price * c.Quantity);
 
         IDiscountStrategy discountStrategy = CreateDiscountStrategy(discountType);
         DiscountCalculator discountCalculator = new(discountStrategy);
@@ -445,7 +459,7 @@ public class StoreController : Controller
         decimal deliveryPrice = deliveryOrder.GetDeliveryPrice();
         decimal finalTotal = totalAfterDiscount + servicePrice + deliveryPrice;
 
-        ViewBag.Cart = ShoppingCart;
+        ViewBag.Cart = cart;
         ViewBag.Total = productsTotal;
 
         ConfigureStrategyViewData(
@@ -650,7 +664,8 @@ public class StoreController : Controller
             ? "courier"
             : deliveryMethod;
 
-        decimal productsTotal = ShoppingCart.Sum(c => c.Product.Price * c.Quantity);
+        List<CartLine> cart = GetCartLines();
+        decimal productsTotal = cart.Sum(c => c.Product.Price * c.Quantity);
 
         IDiscountStrategy discountStrategy = CreateDiscountStrategy("none");
         DiscountCalculator discountCalculator = new(discountStrategy);
@@ -824,13 +839,20 @@ public class StoreController : Controller
             ? "client@bluewear.com"
             : email;
 
-        CustomerStockObserver observer = new(
-            product.Id,
-            customerName,
-            email
-        );
+        bool alreadyExists = _context.StockSubscriptions.Any(subscription =>
+            subscription.ProductId == product.Id &&
+            subscription.Email == email);
 
-        StockSubject.Attach(observer);
+        if (!alreadyExists)
+        {
+            _context.StockSubscriptions.Add(new StockSubscription
+            {
+                ProductId = product.Id,
+                CustomerName = customerName,
+                Email = email
+            });
+            _context.SaveChanges();
+        }
 
         return RedirectToAction(nameof(StockAlerts));
     }
@@ -842,7 +864,15 @@ public class StoreController : Controller
     {
         if (!string.IsNullOrWhiteSpace(email))
         {
-            StockSubject.Detach(email, productId);
+            StockSubscription? subscription = _context.StockSubscriptions.FirstOrDefault(existing =>
+                existing.Email == email &&
+                existing.ProductId == productId);
+
+            if (subscription != null)
+            {
+                _context.StockSubscriptions.Remove(subscription);
+                _context.SaveChanges();
+            }
         }
 
         return RedirectToAction(nameof(Admin));
@@ -850,12 +880,13 @@ public class StoreController : Controller
 
     public IActionResult ClearStockNotifications()
     {
-        StockNotifications.Clear();
+        _context.StockNotifications.RemoveRange(_context.StockNotifications);
+        _context.SaveChanges();
 
         return RedirectToAction(nameof(Admin));
     }
 
-    private static void NotifyStockObservers(StoreProduct product, int oldStock, int newStock)
+    private void NotifyStockObservers(StoreProduct product, int oldStock, int newStock)
     {
         if (oldStock == newStock)
         {
@@ -869,11 +900,33 @@ public class StoreController : Controller
             newStock
         );
 
-        List<StockNotification> notifications = StockSubject.Notify(stockEvent);
+        List<CustomerStockObserver> observers = _context.StockSubscriptions
+            .Where(subscription => subscription.ProductId == product.Id)
+            .AsEnumerable()
+            .Select(subscription => new CustomerStockObserver(
+                subscription.ProductId,
+                subscription.CustomerName,
+                subscription.Email))
+            .ToList();
+
+        List<StockNotification> notifications = observers
+            .Select(observer => observer.Update(stockEvent))
+            .ToList();
 
         if (notifications.Count > 0)
         {
-            StockNotifications.AddRange(notifications);
+            List<StockNotificationRecord> records = notifications
+                .Select(notification => new StockNotificationRecord
+                {
+                    ProductId = product.Id,
+                    CustomerName = notification.CustomerName,
+                    Email = notification.Email,
+                    ProductName = notification.ProductName,
+                    Message = notification.Message
+                })
+                .ToList();
+
+            _context.StockNotifications.AddRange(records);
         }
     }
 
@@ -920,6 +973,8 @@ public class StoreController : Controller
             );
 
             CommandInvoker.ExecuteCommand(command);
+            LogAdminCommand(command, isUndo: false);
+            _context.SaveChanges();
         }
 
         return RedirectToAction(nameof(AdminCommands));
@@ -945,6 +1000,8 @@ public class StoreController : Controller
             );
 
             CommandInvoker.ExecuteCommand(command);
+            LogAdminCommand(command, isUndo: false);
+            _context.SaveChanges();
         }
 
         return RedirectToAction(nameof(AdminCommands));
@@ -960,7 +1017,14 @@ public class StoreController : Controller
             return RedirectToAction(nameof(AdminLogin));
         }
 
-        CommandInvoker.UndoLastCommand();
+        IAdminCommand? command = CommandInvoker.UndoLastCommand();
+
+        if (command != null)
+        {
+            _context.Products.Update(command.Product);
+            LogAdminCommand(command, isUndo: true);
+            _context.SaveChanges();
+        }
 
         return RedirectToAction(nameof(AdminCommands));
     }
@@ -1309,7 +1373,7 @@ public class StoreController : Controller
         }
     }
 
-    private static List<CategoryStyleEditViewModel> GetCategoryStyles()
+    private List<CategoryStyleEditViewModel> GetCategoryStyles()
     {
         List<CategoryStyleEditViewModel> styles = new();
 
@@ -1332,43 +1396,63 @@ public class StoreController : Controller
 
     private void AddLayoutCounters()
     {
-        ViewBag.CartCount = ShoppingCart.Sum(c => c.Quantity);
-        ViewBag.WishlistCount = WishlistItems.Count;
+        ViewBag.CartCount = _context.CartItems.Sum(c => (int?)c.Quantity) ?? 0;
+        ViewBag.WishlistCount = _context.WishlistItems.Count();
     }
 
-    public class StoreProduct
+    private List<CartLine> GetCartLines()
     {
-        public int Id { get; }
+        return _context.CartItems
+            .Include(item => item.Product)
+            .OrderBy(item => item.Id)
+            .Select(item => new CartLine(item.Product, item.Quantity))
+            .ToList();
+    }
 
-        public string Name { get; }
+    private List<StoreProduct> GetWishlistProducts()
+    {
+        return _context.WishlistItems
+            .Include(item => item.Product)
+            .OrderBy(item => item.Id)
+            .Select(item => item.Product)
+            .ToList();
+    }
 
-        public string Category { get; }
+    private List<IStockObserver> GetStockObservers()
+    {
+        return _context.StockSubscriptions
+            .OrderBy(subscription => subscription.Id)
+            .AsEnumerable()
+            .Select(subscription => new CustomerStockObserver(
+                subscription.ProductId,
+                subscription.CustomerName,
+                subscription.Email))
+            .Cast<IStockObserver>()
+            .ToList();
+    }
 
-        public decimal Price { get; set; }
+    private List<StockNotification> GetStockNotifications()
+    {
+        return _context.StockNotifications
+            .OrderByDescending(notification => notification.CreatedAt)
+            .AsEnumerable()
+            .Select(notification => new StockNotification(
+                notification.CustomerName,
+                notification.Email,
+                notification.ProductName,
+                notification.Message))
+            .ToList();
+    }
 
-        public string Size { get; }
-
-        public string Color { get; }
-
-        public int StockQuantity { get; set; }
-
-        public StoreProduct(
-            int id,
-            string name,
-            string category,
-            decimal price,
-            string size,
-            string color,
-            int stockQuantity)
+    private void LogAdminCommand(IAdminCommand command, bool isUndo)
+    {
+        _context.AdminCommandLogs.Add(new AdminCommandLog
         {
-            Id = id;
-            Name = name;
-            Category = category;
-            Price = price;
-            Size = size;
-            Color = color;
-            StockQuantity = stockQuantity;
-        }
+            ProductId = command.Product.Id,
+            CommandName = command.Name,
+            Description = command.Description,
+            IsUndo = isUndo
+        });
     }
 
     public class CartLine
@@ -1386,6 +1470,8 @@ public class StoreController : Controller
 
     public interface IAdminCommand
     {
+        StoreProduct Product { get; }
+
         string Name { get; }
 
         string Description { get; }
@@ -1414,6 +1500,8 @@ public class StoreController : Controller
         }
 
         public string Name => "Modificare stoc";
+
+        public StoreProduct Product => _product;
 
         public string Description =>
             $"Produsul {_product.Name}: stoc schimbat de la {_oldStock} la {_newStock}.";
@@ -1447,6 +1535,8 @@ public class StoreController : Controller
 
         public string Name => "Modificare pret";
 
+        public StoreProduct Product => _product;
+
         public string Description =>
             $"Produsul {_product.Name}: pret schimbat de la {_oldPrice} MDL la {_newPrice} MDL.";
 
@@ -1476,18 +1566,19 @@ public class StoreController : Controller
             LastMessage = $"Executat: {command.Description}";
         }
 
-        public void UndoLastCommand()
+        public IAdminCommand? UndoLastCommand()
         {
             if (_history.Count == 0)
             {
                 LastMessage = "Nu exista comenzi pentru Undo.";
-                return;
+                return null;
             }
 
             IAdminCommand command = _history.Pop();
             command.Undo();
 
             LastMessage = $"Undo: {command.Description}";
+            return command;
         }
     }
 

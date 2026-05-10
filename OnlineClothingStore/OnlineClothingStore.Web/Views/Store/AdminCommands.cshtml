@@ -4,8 +4,8 @@
     ViewData["Title"] = "Comenzi Admin";
     Layout = "~/Views/Shared/_Layout.cshtml";
 
-    List<StoreController.StoreProduct> products =
-        ViewBag.Products as List<StoreController.StoreProduct> ?? new List<StoreController.StoreProduct>();
+    List<OnlineClothingStore.Web.Models.StoreProduct> products =
+        ViewBag.Products as List<OnlineClothingStore.Web.Models.StoreProduct> ?? new List<OnlineClothingStore.Web.Models.StoreProduct>();
 
     IReadOnlyList<StoreController.IAdminCommand> commandHistory =
         ViewBag.CommandHistory as IReadOnlyList<StoreController.IAdminCommand>
@@ -55,7 +55,7 @@
 
             <div class="command-products-list">
 
-                @foreach (StoreController.StoreProduct product in products)
+                @foreach (OnlineClothingStore.Web.Models.StoreProduct product in products)
                 {
                     <div class="command-product-item">
 
