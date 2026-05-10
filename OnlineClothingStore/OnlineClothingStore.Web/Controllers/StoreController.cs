@@ -582,6 +582,21 @@ public class StoreController : Controller
 
         NotificationResult result = notification.Send(context);
 
+        _context.SimpleNotifications.Add(new SimpleNotificationRecord
+        {
+            CustomerName = customerName,
+            Email = email,
+            PhoneNumber = phoneNumber,
+            DeviceToken = deviceToken,
+            Message = message,
+            UseEmail = useEmail,
+            UseSms = useSms,
+            UsePush = usePush,
+            Channels = string.Join(", ", result.Channels),
+            DecoratorChain = string.Join(" -> ", decoratorChain)
+        });
+        _context.SaveChanges();
+
         ConfigureDecoratorViewData(
             customerName: customerName,
             email: email,
@@ -1035,6 +1050,8 @@ public class StoreController : Controller
 
     public IActionResult Memento()
     {
+        LoadOutfitDraftFromDatabase();
+
         ConfigureMementoViewData(
             message: "Modifica tinuta, salveaza snapshot-uri si testeaza Undo / Redo."
         );
@@ -1068,6 +1085,7 @@ public class StoreController : Controller
             colorPalette,
             notes
         );
+        SaveCurrentOutfitDraft();
 
         TempData["MementoMessage"] =
             "Tinuta a fost modificata. Pentru a pastra aceasta versiune, apasa Salveaza snapshot.";
@@ -1079,6 +1097,7 @@ public class StoreController : Controller
     public IActionResult SaveOutfitSnapshot()
     {
         _outfitHistory.SaveState(_outfitDesigner);
+        SaveOutfitSnapshotRecord("Save");
 
         TempData["MementoMessage"] =
             "Snapshot salvat. Starea curenta a tinutei a fost memorata.";
@@ -1090,6 +1109,12 @@ public class StoreController : Controller
     public IActionResult UndoOutfit()
     {
         bool restored = _outfitHistory.Undo(_outfitDesigner);
+
+        if (restored)
+        {
+            SaveCurrentOutfitDraft();
+            SaveOutfitSnapshotRecord("Undo");
+        }
 
         TempData["MementoMessage"] = restored
             ? "Undo realizat. Tinuta a revenit la o stare salvata anterior."
@@ -1103,6 +1128,12 @@ public class StoreController : Controller
     {
         bool restored = _outfitHistory.Redo(_outfitDesigner);
 
+        if (restored)
+        {
+            SaveCurrentOutfitDraft();
+            SaveOutfitSnapshotRecord("Redo");
+        }
+
         TempData["MementoMessage"] = restored
             ? "Redo realizat. Tinuta a fost restaurata inainte."
             : "Nu exista snapshot-uri pentru Redo.";
@@ -1112,6 +1143,13 @@ public class StoreController : Controller
 
     private void ConfigureMementoViewData(string message)
     {
+        List<string> snapshotLabels = _context.OutfitSnapshots
+            .OrderByDescending(snapshot => snapshot.CreatedAt)
+            .Take(10)
+            .AsEnumerable()
+            .Select(snapshot => $"{snapshot.ActionType} la {snapshot.CreatedAt:HH:mm:ss}")
+            .ToList();
+
         ViewBag.OutfitTop = _outfitDesigner.Top;
         ViewBag.OutfitBottom = _outfitDesigner.Bottom;
         ViewBag.OutfitShoes = _outfitDesigner.Shoes;
@@ -1121,7 +1159,7 @@ public class StoreController : Controller
 
         ViewBag.UndoCount = _outfitHistory.UndoCount;
         ViewBag.RedoCount = _outfitHistory.RedoCount;
-        ViewBag.SnapshotLabels = _outfitHistory.GetHistoryLabels();
+        ViewBag.SnapshotLabels = snapshotLabels;
 
         ViewBag.MementoMessage = TempData["MementoMessage"] ?? message;
 
@@ -1130,6 +1168,65 @@ public class StoreController : Controller
 
         ViewBag.MementoRoles =
             "OutfitDesigner este Originator, OutfitDraftMemento este Memento, iar OutfitHistory este Caretaker.";
+    }
+
+    private void LoadOutfitDraftFromDatabase()
+    {
+        OutfitDraftRecord? draft = _context.OutfitDrafts
+            .OrderByDescending(item => item.UpdatedAt)
+            .FirstOrDefault();
+
+        if (draft == null)
+        {
+            SaveCurrentOutfitDraft();
+            return;
+        }
+
+        _outfitDesigner.UpdateOutfit(
+            draft.Top,
+            draft.Bottom,
+            draft.Shoes,
+            draft.Accessory,
+            draft.ColorPalette,
+            draft.Notes
+        );
+    }
+
+    private void SaveCurrentOutfitDraft()
+    {
+        OutfitDraftRecord? draft = _context.OutfitDrafts.FirstOrDefault();
+
+        if (draft == null)
+        {
+            draft = new OutfitDraftRecord();
+            _context.OutfitDrafts.Add(draft);
+        }
+
+        draft.Top = _outfitDesigner.Top;
+        draft.Bottom = _outfitDesigner.Bottom;
+        draft.Shoes = _outfitDesigner.Shoes;
+        draft.Accessory = _outfitDesigner.Accessory;
+        draft.ColorPalette = _outfitDesigner.ColorPalette;
+        draft.Notes = _outfitDesigner.Notes;
+        draft.UpdatedAt = DateTime.Now;
+
+        _context.SaveChanges();
+    }
+
+    private void SaveOutfitSnapshotRecord(string actionType)
+    {
+        _context.OutfitSnapshots.Add(new OutfitSnapshotRecord
+        {
+            Top = _outfitDesigner.Top,
+            Bottom = _outfitDesigner.Bottom,
+            Shoes = _outfitDesigner.Shoes,
+            Accessory = _outfitDesigner.Accessory,
+            ColorPalette = _outfitDesigner.ColorPalette,
+            Notes = _outfitDesigner.Notes,
+            ActionType = actionType
+        });
+
+        _context.SaveChanges();
     }
 
     // ============================================================

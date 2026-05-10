@@ -103,9 +103,8 @@ main {
     align-items: center;
     justify-content: center;
     background:
-            radial-gradient(circle at top left, rgba(76, 125, 255, 0.25), transparent 34%),
-            radial-gradient(circle at bottom right, rgba(91, 192, 235, 0.22), transparent 34%),
-            linear-gradient(135deg, #eef4ff 0%, #ffffff 45%, #e7efff 100%);
+            linear-gradient(rgba(244, 248, 255, 0.58), rgba(244, 248, 255, 0.58)),
+            url("../images/home-bg.png") center / cover no-repeat;
 }
 
 .home-content {
@@ -113,10 +112,11 @@ main {
     max-width: 920px;
     padding: 62px 45px;
     text-align: center;
-    background: rgba(255, 255, 255, 0.94);
-    border-radius: 34px;
-    box-shadow: 0 25px 70px rgba(36, 63, 122, 0.16);
-    border: 1px solid #e1e9ff;
+    background: rgba(255, 255, 255, 0.86);
+    border-radius: 28px;
+    box-shadow: 0 25px 70px rgba(17, 49, 75, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.78);
+    backdrop-filter: blur(5px);
 }
 
 .home-logo {
@@ -216,9 +216,9 @@ main {
 
 .home-card {
     padding: 22px 18px;
-    border-radius: 22px;
-    background: #f5f8ff;
-    border: 1px solid #e1e9ff;
+    border-radius: 18px;
+    background: rgba(245, 248, 255, 0.84);
+    border: 1px solid rgba(225, 233, 255, 0.9);
     transition: 0.25s ease;
 }
 
