@@ -1,0 +1,95 @@
+@{
+    ViewData["Title"] = "Outfit Designer";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var snapshotLabels = ViewBag.SnapshotLabels;
+}
+
+<section class="memento-page">
+    <div class="memento-hero">
+        <span class="hero-kicker">Memento Pattern</span>
+        <h1>Outfit Designer</h1>
+        <p>Modifică ținuta, salvează snapshot-uri și revino la o stare anterioară cu Undo / Redo.</p>
+    </div>
+
+    <div class="memento-message">
+        @ViewBag.MementoMessage
+    </div>
+
+    <div class="memento-layout">
+        <section class="memento-card">
+            <h2>Ținuta curentă</h2>
+
+            <div class="outfit-preview">
+                <p><strong>Haină de sus:</strong> @ViewBag.OutfitTop</p>
+                <p><strong>Haină de jos:</strong> @ViewBag.OutfitBottom</p>
+                <p><strong>Încălțăminte:</strong> @ViewBag.OutfitShoes</p>
+                <p><strong>Accesoriu:</strong> @ViewBag.OutfitAccessory</p>
+                <p><strong>Paletă:</strong> @ViewBag.OutfitColorPalette</p>
+                <p><strong>Notițe:</strong> @ViewBag.OutfitNotes</p>
+            </div>
+
+            <div class="memento-actions">
+                <form asp-controller="Store" asp-action="SaveOutfitSnapshot" method="post">
+                    <button type="submit">Salvează snapshot</button>
+                </form>
+
+                <form asp-controller="Store" asp-action="UndoOutfit" method="post">
+                    <button type="submit">Undo</button>
+                </form>
+
+                <form asp-controller="Store" asp-action="RedoOutfit" method="post">
+                    <button type="submit">Redo</button>
+                </form>
+            </div>
+
+            <div class="history-info">
+                Snapshot-uri pentru Undo: @ViewBag.UndoCount | Snapshot-uri pentru Redo: @ViewBag.RedoCount
+            </div>
+
+            @if (snapshotLabels != null && snapshotLabels.Count > 0)
+            {
+                <div class="snapshot-list">
+                    <h3>Snapshot-uri salvate</h3>
+
+                    @foreach (var label in snapshotLabels)
+                    {
+                        <span>@label</span>
+                    }
+                </div>
+            }
+        </section>
+
+        <section class="memento-card">
+            <h2>Formularul de modificare</h2>
+
+            <form asp-controller="Store" asp-action="UpdateOutfitDraft" method="post" class="outfit-form">
+                <label for="top">Haină de sus</label>
+                <input id="top" name="top" value="@ViewBag.OutfitTop" />
+
+                <label for="bottom">Haină de jos</label>
+                <input id="bottom" name="bottom" value="@ViewBag.OutfitBottom" />
+
+                <label for="shoes">Încălțăminte</label>
+                <input id="shoes" name="shoes" value="@ViewBag.OutfitShoes" />
+
+                <label for="accessory">Accesoriu</label>
+                <input id="accessory" name="accessory" value="@ViewBag.OutfitAccessory" />
+
+                <label for="colorPalette">Paletă de culori</label>
+                <input id="colorPalette" name="colorPalette" value="@ViewBag.OutfitColorPalette" />
+
+                <label for="notes">Notițe</label>
+                <textarea id="notes" name="notes">@ViewBag.OutfitNotes</textarea>
+
+                <button type="submit">Aplică modificările</button>
+            </form>
+        </section>
+    </div>
+
+    <section class="memento-card explanation-card">
+        <h2>Roluri în pattern</h2>
+        <p>@ViewBag.MementoInfo</p>
+        <p>@ViewBag.MementoRoles</p>
+    </section>
+</section>
