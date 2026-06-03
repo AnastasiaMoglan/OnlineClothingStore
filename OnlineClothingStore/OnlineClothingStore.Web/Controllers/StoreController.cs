@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using OnlineClothingStore.App.Behavioral.Iterator;
 using OnlineClothingStore.App.Structural.Bridge;
 using OnlineClothingStore.App.Structural.Decorator;
@@ -14,6 +15,7 @@ using OnlineClothingStore.App.Structural.Strategy;
 using OnlineClothingStore.Web.Data;
 using OnlineClothingStore.Web.Models;
 using OnlineClothingStore.Creational.AbstractFactory;
+using OnlineClothingStore.Creational.Builder;
 using OnlineClothingStore.Creational.FactoryMethod;
 
 namespace OnlineClothingStore.Web.Controllers;
@@ -21,6 +23,7 @@ namespace OnlineClothingStore.Web.Controllers;
 public class StoreController : Controller
 {
     private readonly ApplicationDbContext _context;
+    private readonly IConfiguration _configuration;
 
     private List<StoreProduct> Products => _context.Products.ToList();
 
@@ -36,9 +39,10 @@ public class StoreController : Controller
 
     private static readonly OutfitHistory _outfitHistory = new();
 
-    public StoreController(ApplicationDbContext context)
+    public StoreController(ApplicationDbContext context, IConfiguration configuration)
     {
         _context = context;
+        _configuration = configuration;
     }
 
     public IActionResult Index()
@@ -180,6 +184,7 @@ public class StoreController : Controller
         ViewBag.CommandHistory = CommandInvoker.History;
         ViewBag.CommandLastMessage = CommandInvoker.LastMessage;
         ViewBag.ReturnRequests = GetReturnRequests();
+        ViewBag.SupportRequests = GetCustomerSupportRequests();
 
         ViewBag.FlyweightAdminInfo =
             "Adminul modifica un singur stil partajat pentru o categorie. Toate produsele din acea categorie vor folosi noul stil.";
@@ -370,6 +375,116 @@ public class StoreController : Controller
         }
 
         return RedirectToAction(nameof(Wishlist));
+    }
+
+    public IActionResult Support()
+    {
+        ConfigureSupportViewData(
+            orderNumber: "",
+            customerEmail: "",
+            contactPhone: "",
+            problemType: "Damaged product",
+            preferredSolution: "Replace the product",
+            description: "",
+            attachedImages: "",
+            isUrgent: false,
+            wasSubmitted: false,
+            message: ""
+        );
+
+        AddLayoutCounters();
+
+        return View();
+    }
+
+    [HttpPost]
+    public IActionResult Support(
+        string orderNumber,
+        string customerEmail,
+        string contactPhone,
+        string problemType,
+        string preferredSolution,
+        string description,
+        string attachedImages,
+        bool isUrgent)
+    {
+        orderNumber = string.IsNullOrWhiteSpace(orderNumber)
+            ? "Comanda neindicata"
+            : orderNumber;
+
+        customerEmail = string.IsNullOrWhiteSpace(customerEmail)
+            ? "email-neindicat@bluewear.local"
+            : customerEmail;
+
+        contactPhone = string.IsNullOrWhiteSpace(contactPhone)
+            ? "Telefon neindicat"
+            : contactPhone;
+
+        problemType = string.IsNullOrWhiteSpace(problemType)
+            ? "Other"
+            : problemType;
+
+        preferredSolution = string.IsNullOrWhiteSpace(preferredSolution)
+            ? "Contact me with a solution"
+            : preferredSolution;
+
+        description = string.IsNullOrWhiteSpace(description)
+            ? "Clientul a trimis o cerere fara descriere suplimentara."
+            : description;
+
+        List<string> images = SplitAttachedImages(attachedImages);
+
+        ICustomerSupportRequestBuilder builder = new CustomerSupportRequestBuilder()
+            .Reset()
+            .SetOrderNumber(orderNumber)
+            .SetCustomerEmail(customerEmail)
+            .SetProblemType(problemType)
+            .SetDescription(description)
+            .SetPreferredSolution(preferredSolution)
+            .SetContactPhone(contactPhone);
+
+        if (isUrgent)
+        {
+            builder.MarkAsUrgent();
+        }
+
+        foreach (string image in images)
+        {
+            builder.AddAttachedImage(image);
+        }
+
+        CustomerSupportRequest request = builder.Build();
+
+        _context.CustomerSupportRequests.Add(new CustomerSupportRequestRecord
+        {
+            OrderNumber = request.OrderNumber,
+            CustomerEmail = request.CustomerEmail,
+            ContactPhone = request.ContactPhone,
+            ProblemType = request.ProblemType,
+            Description = request.Description,
+            PreferredSolution = request.PreferredSolution,
+            IsUrgent = request.IsUrgent,
+            AttachedImages = string.Join(", ", request.AttachedImages)
+        });
+
+        _context.SaveChanges();
+
+        ConfigureSupportViewData(
+            orderNumber: orderNumber,
+            customerEmail: customerEmail,
+            contactPhone: contactPhone,
+            problemType: problemType,
+            preferredSolution: preferredSolution,
+            description: description,
+            attachedImages: attachedImages,
+            isUrgent: isUrgent,
+            wasSubmitted: true,
+            message: "Cererea a fost trimisa catre Customer Support."
+        );
+
+        AddLayoutCounters();
+
+        return View();
     }
 
     public IActionResult Checkout()
@@ -723,6 +838,7 @@ public class StoreController : Controller
 
         return RedirectToAction(nameof(Admin));
     }
+
     // ============================================================
     // DECORATOR PATTERN
     // ============================================================
@@ -1789,6 +1905,53 @@ public class StoreController : Controller
         return _context.ReturnRequests
             .OrderBy(request => request.Status == "Inregistrat")
             .ThenByDescending(request => request.CreatedAt)
+            .ToList();
+    }
+
+    private List<CustomerSupportRequestRecord> GetCustomerSupportRequests()
+    {
+        return _context.CustomerSupportRequests
+            .OrderBy(request => request.Status == "Raspuns trimis")
+            .ThenByDescending(request => request.IsUrgent)
+            .ThenByDescending(request => request.CreatedAt)
+            .ToList();
+    }
+
+    private void ConfigureSupportViewData(
+        string orderNumber,
+        string customerEmail,
+        string contactPhone,
+        string problemType,
+        string preferredSolution,
+        string description,
+        string attachedImages,
+        bool isUrgent,
+        bool wasSubmitted,
+        string message)
+    {
+        ViewBag.OrderNumber = orderNumber;
+        ViewBag.CustomerEmail = customerEmail;
+        ViewBag.ContactPhone = contactPhone;
+        ViewBag.ProblemType = problemType;
+        ViewBag.PreferredSolution = preferredSolution;
+        ViewBag.Description = description;
+        ViewBag.AttachedImages = attachedImages;
+        ViewBag.IsUrgent = isUrgent;
+        ViewBag.SupportWasSubmitted = wasSubmitted;
+        ViewBag.SupportMessage = message;
+    }
+
+    private static List<string> SplitAttachedImages(string attachedImages)
+    {
+        if (string.IsNullOrWhiteSpace(attachedImages))
+        {
+            return new List<string>();
+        }
+
+        return attachedImages
+            .Split(new[] { ',', ';', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries)
+            .Select(item => item.Trim())
+            .Where(item => !string.IsNullOrWhiteSpace(item))
             .ToList();
     }
 

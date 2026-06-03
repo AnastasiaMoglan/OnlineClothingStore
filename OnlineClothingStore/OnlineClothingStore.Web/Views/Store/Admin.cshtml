@@ -24,6 +24,9 @@
 
     List<ReturnRequestRecord> returnRequests =
         ViewBag.ReturnRequests as List<ReturnRequestRecord> ?? new List<ReturnRequestRecord>();
+
+    List<CustomerSupportRequestRecord> supportRequests =
+        ViewBag.SupportRequests as List<CustomerSupportRequestRecord> ?? new List<CustomerSupportRequestRecord>();
 }
 
 <section class="shop-hero">
@@ -115,6 +118,79 @@
         </div>
     </section>
 }
+
+<section class="admin-support-section">
+    <div class="admin-stock-header">
+        <div>
+            <span class="section-kicker">Customer Support</span>
+            <h2>Cereri de suport clienti</h2>
+            <p>Cererile trimise de clienti apar aici pentru verificare si procesare interna.</p>
+        </div>
+
+        <a asp-controller="Store" asp-action="Support" class="btn secondary">
+            Formular suport
+        </a>
+    </div>
+
+    @if (supportRequests.Count == 0)
+    {
+        <p class="empty-result">Nu exista cereri de suport.</p>
+    }
+    else
+    {
+        <div class="admin-support-list">
+            @foreach (CustomerSupportRequestRecord request in supportRequests)
+            {
+                <div class="admin-support-card">
+                    <div class="support-request-head">
+                        <div>
+                            <span class="support-ticket">#@request.Id</span>
+                            <h3>@request.ProblemType</h3>
+                            <p>@request.Description</p>
+                        </div>
+
+                        <span class="support-status-badge @(request.Status == "Raspuns trimis" ? "answered" : request.IsUrgent ? "urgent" : "new")">
+                            @(request.IsUrgent && request.Status != "Raspuns trimis" ? "Urgent" : request.Status)
+                        </span>
+                    </div>
+
+                    <div class="support-request-meta">
+                        <div>
+                            <span>Email client</span>
+                            <strong>@request.CustomerEmail</strong>
+                        </div>
+
+                        <div>
+                            <span>Telefon</span>
+                            <strong>@request.ContactPhone</strong>
+                        </div>
+
+                        <div>
+                            <span>Comanda</span>
+                            <strong>@request.OrderNumber</strong>
+                        </div>
+
+                        <div>
+                            <span>Solutie dorita</span>
+                            <strong>@request.PreferredSolution</strong>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(request.AttachedImages))
+                    {
+                        <p class="support-attachments">
+                            Atasamente: @request.AttachedImages
+                        </p>
+                    }
+
+                    <p class="support-admin-note">
+                        Cererea a fost primita la @request.CreatedAt.ToString("dd.MM.yyyy HH:mm").
+                    </p>
+                </div>
+            }
+        </div>
+    }
+</section>
 
 <section class="admin-returns-section">
     <div class="admin-stock-header">
