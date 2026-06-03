@@ -1,5 +1,6 @@
 @using OnlineClothingStore.App.Structural.Observer
 @using OnlineClothingStore.Web.Controllers
+@using OnlineClothingStore.Web.Models
 
 @{
     ViewData["Title"] = "Admin";
@@ -20,6 +21,9 @@
 
     string commandLastMessage =
         ViewBag.CommandLastMessage as string ?? "Nu a fost executata nicio comanda.";
+
+    List<ReturnRequestRecord> returnRequests =
+        ViewBag.ReturnRequests as List<ReturnRequestRecord> ?? new List<ReturnRequestRecord>();
 }
 
 <section class="shop-hero">
@@ -111,6 +115,99 @@
         </div>
     </section>
 }
+
+<section class="admin-returns-section">
+    <div class="admin-stock-header">
+        <div>
+            <span class="section-kicker">Retururi clienti</span>
+            <h2>Cereri de retur primite</h2>
+            <p>
+                Cererile trimise de clienti sunt salvate aici ca magazinul sa le poata verifica
+                si prelua pentru procesare.
+            </p>
+        </div>
+
+        <a asp-controller="Store" asp-action="Returns" class="btn secondary">
+            Formular retur
+        </a>
+    </div>
+
+    @if (returnRequests.Count == 0)
+    {
+        <p class="empty-result">Nu exista cereri de retur inregistrate.</p>
+    }
+    else
+    {
+        <div class="admin-returns-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cerere</th>
+                        <th>Client</th>
+                        <th>Comanda</th>
+                        <th>Motiv</th>
+                        <th>Status</th>
+                        <th>Actiune</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (ReturnRequestRecord request in returnRequests)
+                    {
+                        <tr>
+                            <td>
+                                <strong>#@request.Id</strong>
+                                <span>@request.CreatedAt.ToString("dd.MM.yyyy HH:mm")</span>
+                            </td>
+
+                            <td>
+                                <strong>@request.CustomerEmail</strong>
+                                <span>@request.PhoneNumber</span>
+                            </td>
+
+                            <td>
+                                <strong>@request.OrderNumber</strong>
+                                <span>@request.ProductName</span>
+                            </td>
+
+                            <td>
+                                <strong>@request.ReturnType</strong>
+                                <span>@request.ReturnReason</span>
+                            </td>
+
+                            <td>
+                                <span class="return-status @(request.Status == "Inregistrat" ? "registered" : "new")">
+                                    @request.Status
+                                </span>
+
+                                @if (request.RegisteredAt.HasValue)
+                                {
+                                    <small>@request.RegisteredAt.Value.ToString("dd.MM.yyyy HH:mm")</small>
+                                }
+                            </td>
+
+                            <td>
+                                @if (request.Status == "Inregistrat")
+                                {
+                                    <span class="return-done">Preluat</span>
+                                }
+                                else
+                                {
+                                    <form asp-controller="Store" asp-action="RegisterReturnRequest" method="post">
+                                        <input type="hidden" name="id" value="@request.Id" />
+                                        <button type="submit" class="return-register-btn">
+                                            Inregistreaza
+                                        </button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
 
 <section class="admin-stock-section">
     <div class="admin-stock-header">

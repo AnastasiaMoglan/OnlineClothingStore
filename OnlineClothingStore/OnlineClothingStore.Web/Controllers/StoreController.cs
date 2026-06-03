@@ -13,6 +13,7 @@ using OnlineClothingStore.App.Structural.Observer;
 using OnlineClothingStore.App.Structural.Strategy;
 using OnlineClothingStore.Web.Data;
 using OnlineClothingStore.Web.Models;
+using OnlineClothingStore.Creational.FactoryMethod;
 
 namespace OnlineClothingStore.Web.Controllers;
 
@@ -177,6 +178,7 @@ public class StoreController : Controller
         ViewBag.StockNotifications = GetStockNotifications();
         ViewBag.CommandHistory = CommandInvoker.History;
         ViewBag.CommandLastMessage = CommandInvoker.LastMessage;
+        ViewBag.ReturnRequests = GetReturnRequests();
 
         ViewBag.FlyweightAdminInfo =
             "Adminul modifica un singur stil partajat pentru o categorie. Toate produsele din acea categorie vor folosi noul stil.";
@@ -491,6 +493,155 @@ public class StoreController : Controller
         return View();
     }
 
+    // ============================================================
+    // FACTORY METHOD PATTERN
+    // ============================================================
+
+    public IActionResult FactoryMethod()
+    {
+        return RedirectToAction(nameof(Returns));
+    }
+
+    public IActionResult Returns()
+    {
+        ConfigureFactoryMethodViewData(
+            orderNumber: "",
+            productName: "",
+            customerEmail: "",
+            phoneNumber: "",
+            returnType: "refund",
+            resultMessage: string.Empty,
+            returnReason: "",
+            requestId: null,
+            wasProcessed: false
+        );
+
+        AddLayoutCounters();
+
+        return View();
+    }
+
+    [HttpPost]
+    public IActionResult Returns(
+        string orderNumber,
+        string productName,
+        string customerEmail,
+        string phoneNumber,
+        string returnReason,
+        string returnType)
+    {
+        orderNumber = string.IsNullOrWhiteSpace(orderNumber)
+            ? "Comanda neindicata"
+            : orderNumber;
+
+        productName = string.IsNullOrWhiteSpace(productName)
+            ? "Produs din comanda"
+            : productName;
+
+        customerEmail = string.IsNullOrWhiteSpace(customerEmail)
+            ? "email-neindicat@bluewear.local"
+            : customerEmail;
+
+        phoneNumber = string.IsNullOrWhiteSpace(phoneNumber)
+            ? "Telefon neindicat"
+            : phoneNumber;
+
+        returnReason = string.IsNullOrWhiteSpace(returnReason)
+            ? "Clientul a solicitat retur fara detalii suplimentare."
+            : returnReason;
+
+        returnType = string.IsNullOrWhiteSpace(returnType)
+            ? "refund"
+            : returnType;
+
+        ReturnProcessorFactory factory = CreateReturnProcessorFactory(returnType);
+
+        string resultMessage = factory.HandleReturn(orderNumber, productName);
+
+        ReturnRequestRecord request = new()
+        {
+            OrderNumber = orderNumber,
+            ProductName = productName,
+            CustomerEmail = customerEmail,
+            PhoneNumber = phoneNumber,
+            ReturnReason = returnReason,
+            ReturnType = GetReturnTypeLabel(returnType),
+            ProcessingMessage = resultMessage
+        };
+
+        _context.ReturnRequests.Add(request);
+        _context.SaveChanges();
+
+        ConfigureFactoryMethodViewData(
+            orderNumber: orderNumber,
+            productName: productName,
+            customerEmail: customerEmail,
+            phoneNumber: phoneNumber,
+            returnType: returnType,
+            resultMessage: resultMessage,
+            returnReason: returnReason,
+            requestId: request.Id,
+            wasProcessed: true
+        );
+
+        AddLayoutCounters();
+
+        return View();
+    }
+
+    private static ReturnProcessorFactory CreateReturnProcessorFactory(string returnType)
+    {
+        return returnType switch
+        {
+            "size" => new SizeExchangeReturnFactory(),
+            "defective" => new DefectiveProductReturnFactory(),
+            _ => new RefundReturnFactory()
+        };
+    }
+
+    private void ConfigureFactoryMethodViewData(
+        string orderNumber,
+        string productName,
+        string customerEmail,
+        string phoneNumber,
+        string returnType,
+        string resultMessage,
+        string returnReason,
+        int? requestId,
+        bool wasProcessed)
+    {
+        ViewBag.OrderNumber = orderNumber;
+        ViewBag.ProductName = productName;
+        ViewBag.CustomerEmail = customerEmail;
+        ViewBag.PhoneNumber = phoneNumber;
+        ViewBag.ReturnType = returnType;
+        ViewBag.ReturnReason = returnReason;
+        ViewBag.ResultMessage = resultMessage;
+        ViewBag.ReturnRequestId = requestId;
+        ViewBag.WasProcessed = wasProcessed;
+    }
+
+    [HttpPost]
+    public IActionResult RegisterReturnRequest(int id)
+    {
+        string role = HttpContext.Session.GetString("role") ?? "Guest";
+
+        if (role != "Manager")
+        {
+            return RedirectToAction(nameof(AdminLogin));
+        }
+
+        ReturnRequestRecord? request = _context.ReturnRequests.FirstOrDefault(item => item.Id == id);
+
+        if (request != null)
+        {
+            request.Status = "Inregistrat";
+            request.RegisteredAt = DateTime.Now;
+            _context.SaveChanges();
+        }
+
+        return RedirectToAction(nameof(Admin));
+    }
     // ============================================================
     // DECORATOR PATTERN
     // ============================================================
@@ -1539,6 +1690,24 @@ public class StoreController : Controller
                 notification.ProductName,
                 notification.Message))
             .ToList();
+    }
+
+    private List<ReturnRequestRecord> GetReturnRequests()
+    {
+        return _context.ReturnRequests
+            .OrderBy(request => request.Status == "Inregistrat")
+            .ThenByDescending(request => request.CreatedAt)
+            .ToList();
+    }
+
+    private static string GetReturnTypeLabel(string returnType)
+    {
+        return returnType switch
+        {
+            "size" => "Schimb de marime",
+            "defective" => "Produs defect",
+            _ => "Rambursare"
+        };
     }
 
     private void LogAdminCommand(IAdminCommand command, bool isUndo)

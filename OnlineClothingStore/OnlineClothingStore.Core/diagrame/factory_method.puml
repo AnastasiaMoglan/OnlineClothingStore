@@ -1,44 +1,61 @@
 ﻿@startuml
-title Factory Method Pattern (LSP + DIP)
+title Factory Method - Return Processing
 
 skinparam classAttributeIconSize 0
-skinparam linetype ortho
 
-'========================
-' PRODUCT (abstraction)
-'========================
-abstract class Payment {
-  {abstract} + Pay(amount : decimal) : void
+interface IReturnProcessor {
+    +ProcessReturn(orderNumber : string, productName : string) : string
 }
 
-'========================
-' CONCRETE PRODUCT
-'========================
-class CardPayment {
-  + Pay(amount : decimal) : void
+class RefundReturnProcessor {
+    +ProcessReturn(orderNumber : string, productName : string) : string
 }
 
-'========================
-' CREATOR (interface)
-'========================
-interface IPaymentFactory {
-  + CreatePayment() : Payment
+class SizeExchangeReturnProcessor {
+    +ProcessReturn(orderNumber : string, productName : string) : string
 }
 
-'========================
-' CONCRETE FACTORY
-'========================
-class CardPaymentFactory {
-  + CreatePayment() : Payment
+class DefectiveProductReturnProcessor {
+    +ProcessReturn(orderNumber : string, productName : string) : string
 }
 
-'========================
-' RELATIONSHIPS
-'========================
-Payment <|-- CardPayment
-IPaymentFactory <|.. CardPaymentFactory
+abstract class ReturnProcessorFactory {
+    +CreateProcessor() : IReturnProcessor
+    +HandleReturn(orderNumber : string, productName : string) : string
+}
 
-IPaymentFactory ..> Payment : creates
-CardPaymentFactory ..> CardPayment : creates
+class RefundReturnFactory {
+    +CreateProcessor() : IReturnProcessor
+}
+
+class SizeExchangeReturnFactory {
+    +CreateProcessor() : IReturnProcessor
+}
+
+class DefectiveProductReturnFactory {
+    +CreateProcessor() : IReturnProcessor
+}
+
+class StoreController {
+    +FactoryMethod() : IActionResult
+    +FactoryMethod(orderNumber : string, productName : string, returnType : string) : IActionResult
+    -CreateReturnProcessorFactory(returnType : string) : ReturnProcessorFactory
+    -ConfigureFactoryMethodViewData(...) : void
+}
+
+IReturnProcessor <|.. RefundReturnProcessor
+IReturnProcessor <|.. SizeExchangeReturnProcessor
+IReturnProcessor <|.. DefectiveProductReturnProcessor
+
+ReturnProcessorFactory <|-- RefundReturnFactory
+ReturnProcessorFactory <|-- SizeExchangeReturnFactory
+ReturnProcessorFactory <|-- DefectiveProductReturnFactory
+
+RefundReturnFactory ..> RefundReturnProcessor : creates
+SizeExchangeReturnFactory ..> SizeExchangeReturnProcessor : creates
+DefectiveProductReturnFactory ..> DefectiveProductReturnProcessor : creates
+
+ReturnProcessorFactory --> IReturnProcessor
+StoreController --> ReturnProcessorFactory
 
 @enduml
