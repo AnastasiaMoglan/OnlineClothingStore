@@ -17,6 +17,8 @@ using OnlineClothingStore.Web.Models;
 using OnlineClothingStore.Creational.AbstractFactory;
 using OnlineClothingStore.Creational.Builder;
 using OnlineClothingStore.Creational.FactoryMethod;
+using OnlineClothingStore.Creational.Prototype;
+using PrototypeSizeGuide = OnlineClothingStore.Creational.Prototype.SizeGuide;
 
 namespace OnlineClothingStore.Web.Controllers;
 
@@ -391,6 +393,49 @@ public class StoreController : Controller
             wasSubmitted: false,
             message: ""
         );
+
+        AddLayoutCounters();
+
+        return View();
+    }
+
+    public IActionResult SizeGuide(
+        string? category,
+        string? region,
+        string? fit,
+        decimal? chest,
+        decimal? waist,
+        decimal? hips,
+        decimal? footLength)
+    {
+        string selectedCategory = NormalizeSizeGuideCategory(category);
+        string selectedRegion = NormalizeSizeGuideRegion(region);
+        string selectedFit = NormalizeSizeGuideFit(fit);
+
+        PrototypeSizeGuide? guide = null;
+        string recommendedSize = "Alege categoria";
+
+        if (!string.IsNullOrWhiteSpace(selectedCategory))
+        {
+            guide = CreateSizeGuideClone(selectedCategory);
+            guide.Region = selectedRegion;
+            guide.BrandName = $"BlueWear {GetFitLabel(selectedFit)}";
+            guide.Sizes = BuildRegionAwareSizes(guide.Category, selectedRegion);
+            guide.Notes = BuildSizeGuideNotes(selectedCategory, selectedFit, chest, waist, hips, footLength);
+            recommendedSize = BuildSizeRecommendation(selectedCategory, selectedRegion, chest, waist, hips, footLength);
+        }
+
+        ViewBag.SizeGuide = guide;
+        ViewBag.SizeGuideCategories = GetSizeGuideCategories();
+        ViewBag.SizeGuideRegions = new List<string> { "EU", "US", "UK" };
+        ViewBag.SelectedCategory = selectedCategory;
+        ViewBag.SelectedRegion = selectedRegion;
+        ViewBag.SelectedFit = selectedFit;
+        ViewBag.Chest = chest;
+        ViewBag.Waist = waist;
+        ViewBag.Hips = hips;
+        ViewBag.FootLength = footLength;
+        ViewBag.RecommendedSize = recommendedSize;
 
         AddLayoutCounters();
 
@@ -1712,6 +1757,296 @@ public class StoreController : Controller
         {
             (minPrice, maxPrice) = (maxPrice, minPrice);
         }
+    }
+
+    private static List<string> GetSizeGuideCategories()
+    {
+        return new List<string>
+        {
+            "T-Shirts",
+            "Hoodies",
+            "Jeans",
+            "Jackets",
+            "Dresses",
+            "Shoes"
+        };
+    }
+
+    private static PrototypeSizeGuide CreateSizeGuideClone(string category)
+    {
+        SizeGuideRegistry registry = new();
+
+        registry.Register("T-Shirts", new SizeGuidePrototype(new PrototypeSizeGuide(
+            "T-Shirts",
+            "BlueWear Regular",
+            "EU",
+            new List<string> { "XS", "S", "M", "L", "XL" },
+            new Dictionary<string, string>
+            {
+                ["Bust"] = "82-90 / 90-98 / 98-106 / 106-114 / 114-122 cm",
+                ["Umeri"] = "36-38 / 38-40 / 40-42 / 42-44 / 44-46 cm",
+                ["Lungime"] = "60-62 / 62-64 / 64-66 / 66-68 / 68-70 cm"
+            },
+            "Alege marimea dupa bust; pentru tricouri lejere poti urca o marime."
+        )));
+
+        registry.Register("Hoodies", new SizeGuidePrototype(new PrototypeSizeGuide(
+            "Hoodies",
+            "BlueWear Comfort",
+            "EU",
+            new List<string> { "XS", "S", "M", "L", "XL", "XXL" },
+            new Dictionary<string, string>
+            {
+                ["Bust"] = "88-96 / 96-104 / 104-112 / 112-120 / 120-128 / 128-136 cm",
+                ["Maneca"] = "58-60 / 60-62 / 62-64 / 64-66 / 66-68 / 68-70 cm",
+                ["Lungime"] = "63-65 / 65-67 / 67-69 / 69-71 / 71-73 / 73-75 cm"
+            },
+            "Hanoracele sunt gandite pentru stratificare; lasa spatiu peste tricou."
+        )));
+
+        registry.Register("Jeans", new SizeGuidePrototype(new PrototypeSizeGuide(
+            "Jeans",
+            "BlueWear Denim",
+            "EU",
+            new List<string> { "26", "28", "30", "32", "34", "36" },
+            new Dictionary<string, string>
+            {
+                ["Talie"] = "66-70 / 70-74 / 74-78 / 78-84 / 84-90 / 90-96 cm",
+                ["Sold"] = "88-92 / 92-96 / 96-100 / 100-106 / 106-112 / 112-118 cm",
+                ["Interior picior"] = "76 / 78 / 80 / 82 / 84 / 86 cm"
+            },
+            "Pentru jeans, talia si soldul sunt cele mai importante masuratori."
+        )));
+
+        registry.Register("Jackets", new SizeGuidePrototype(new PrototypeSizeGuide(
+            "Jackets",
+            "BlueWear Layers",
+            "EU",
+            new List<string> { "S", "M", "L", "XL", "XXL" },
+            new Dictionary<string, string>
+            {
+                ["Bust"] = "92-100 / 100-108 / 108-116 / 116-124 / 124-132 cm",
+                ["Umeri"] = "40-42 / 42-44 / 44-46 / 46-48 / 48-50 cm",
+                ["Lungime"] = "66-68 / 68-70 / 70-72 / 72-74 / 74-76 cm"
+            },
+            "Pentru jachete, alege marimea care lasa loc pentru un strat subtire dedesubt."
+        )));
+
+        registry.Register("Dresses", new SizeGuidePrototype(new PrototypeSizeGuide(
+            "Dresses",
+            "BlueWear Studio",
+            "EU",
+            new List<string> { "XS", "S", "M", "L", "XL" },
+            new Dictionary<string, string>
+            {
+                ["Bust"] = "80-86 / 86-92 / 92-98 / 98-106 / 106-114 cm",
+                ["Talie"] = "62-68 / 68-74 / 74-80 / 80-88 / 88-96 cm",
+                ["Sold"] = "86-92 / 92-98 / 98-104 / 104-112 / 112-120 cm"
+            },
+            "Pentru rochii, verifica bustul, talia si soldul impreuna."
+        )));
+
+        registry.Register("Shoes", new SizeGuidePrototype(new PrototypeSizeGuide(
+            "Shoes",
+            "BlueWear Steps",
+            "EU",
+            new List<string> { "36", "37", "38", "39", "40", "41", "42", "43" },
+            new Dictionary<string, string>
+            {
+                ["Lungime talpa"] = "23.0 / 23.7 / 24.4 / 25.0 / 25.7 / 26.4 / 27.0 / 27.7 cm",
+                ["Latime"] = "Standard",
+                ["Recomandare"] = "Masora piciorul la finalul zilei pentru precizie mai buna."
+            },
+            "Pentru incaltaminte, lungimea talpii decide marimea."
+        )));
+
+        return registry.GetClone(category);
+    }
+
+    private static string NormalizeSizeGuideCategory(string? category)
+    {
+        return GetSizeGuideCategories().Contains(category)
+            ? category!
+            : string.Empty;
+    }
+
+    private static string NormalizeSizeGuideRegion(string? region)
+    {
+        return region switch
+        {
+            "US" => "US",
+            "UK" => "UK",
+            _ => "EU"
+        };
+    }
+
+    private static string NormalizeSizeGuideFit(string? fit)
+    {
+        return fit switch
+        {
+            "slim" => "slim",
+            "relaxed" => "relaxed",
+            "oversized" => "oversized",
+            _ => "regular"
+        };
+    }
+
+    private static string GetFitLabel(string fit)
+    {
+        return fit switch
+        {
+            "slim" => "Slim Fit",
+            "relaxed" => "Relaxed Fit",
+            "oversized" => "Oversized Fit",
+            _ => "Regular Fit"
+        };
+    }
+
+    private static List<string> BuildRegionAwareSizes(string category, string region)
+    {
+        if (category != "Shoes")
+        {
+            return category switch
+            {
+                "Jeans" => new List<string> { "26", "28", "30", "32", "34", "36" },
+                "Hoodies" => new List<string> { "XS", "S", "M", "L", "XL", "XXL" },
+                "Jackets" => new List<string> { "S", "M", "L", "XL", "XXL" },
+                _ => new List<string> { "XS", "S", "M", "L", "XL" }
+            };
+        }
+
+        return region switch
+        {
+            "US" => new List<string> { "5.5", "6.5", "7.5", "8.5", "9.5", "10.5", "11.5", "12.5" },
+            "UK" => new List<string> { "3.5", "4.5", "5.5", "6.5", "7.5", "8.5", "9.5", "10.5" },
+            _ => new List<string> { "36", "37", "38", "39", "40", "41", "42", "43" }
+        };
+    }
+
+    private static string BuildSizeGuideNotes(
+        string category,
+        string fit,
+        decimal? chest,
+        decimal? waist,
+        decimal? hips,
+        decimal? footLength)
+    {
+        string fitAdvice = fit switch
+        {
+            "slim" => "Croiala slim sta aproape de corp; daca esti intre doua marimi, alege marimea mai mare.",
+            "relaxed" => "Croiala relaxed lasa mai mult spatiu pentru miscare si layering.",
+            "oversized" => "Croiala oversized este vizibil lejera; ramai la marimea ta daca vrei efectul dorit.",
+            _ => "Croiala regular pastreaza echilibrul intre confort si forma."
+        };
+
+        bool hasBodyMeasurements = chest.HasValue || waist.HasValue || hips.HasValue || footLength.HasValue;
+        string measurementAdvice = hasBodyMeasurements
+            ? "Am luat in calcul masuratorile introduse pentru o recomandare rapida."
+            : "Completeaza masuratorile pentru o recomandare mai precisa.";
+
+        string categoryAdvice = category switch
+        {
+            "Jeans" => "La denim, prioritatea este talia; soldul confirma daca modelul ramane confortabil.",
+            "Shoes" => "Pentru pantofi, masoara lungimea piciorului in centimetri si compara cu tabelul.",
+            "Dresses" => "Pentru rochii, verifica talia si soldul inainte de a confirma marimea.",
+            "Jackets" => "Pentru jachete, lasa 2-4 cm extra daca porti hanorac dedesubt.",
+            "Hoodies" => "Pentru hanorace, alege lejer daca preferi maneci si umeri relaxati.",
+            _ => "Pentru topuri, bustul si umerii dau cea mai buna orientare."
+        };
+
+        return $"{fitAdvice} {measurementAdvice} {categoryAdvice}";
+    }
+
+    private static string BuildSizeRecommendation(
+        string category,
+        string region,
+        decimal? chest,
+        decimal? waist,
+        decimal? hips,
+        decimal? footLength)
+    {
+        if (category == "Shoes" && footLength.HasValue)
+        {
+            decimal value = footLength.Value;
+
+            if (value <= 23.0m) return ConvertShoeSize("36", region);
+            if (value <= 23.7m) return ConvertShoeSize("37", region);
+            if (value <= 24.4m) return ConvertShoeSize("38", region);
+            if (value <= 25.0m) return ConvertShoeSize("39", region);
+            if (value <= 25.7m) return ConvertShoeSize("40", region);
+            if (value <= 26.4m) return ConvertShoeSize("41", region);
+            if (value <= 27.0m) return ConvertShoeSize("42", region);
+            return ConvertShoeSize("43", region) + "+";
+        }
+
+        if (category == "Jeans")
+        {
+            decimal? denimReference = waist ?? hips;
+
+            if (!denimReference.HasValue)
+            {
+                return "Adauga masuratori";
+            }
+
+            decimal denimValue = denimReference.Value;
+
+            if (denimValue <= 70m) return "26";
+            if (denimValue <= 74m) return "28";
+            if (denimValue <= 78m) return "30";
+            if (denimValue <= 84m) return "32";
+            if (denimValue <= 90m) return "34";
+            return "36+";
+        }
+
+        decimal? reference = category switch
+        {
+            "Dresses" => new[] { chest, waist, hips }.Where(value => value.HasValue).Max(),
+            _ => chest ?? waist ?? hips
+        };
+
+        if (!reference.HasValue)
+        {
+            return "Adauga masuratori";
+        }
+
+        decimal sizeValue = reference.Value;
+
+        if (sizeValue <= 88m) return "XS";
+        if (sizeValue <= 96m) return "S";
+        if (sizeValue <= 104m) return "M";
+        if (sizeValue <= 112m) return "L";
+        if (sizeValue <= 122m) return "XL";
+        return "XXL";
+    }
+
+    private static string ConvertShoeSize(string euSize, string region)
+    {
+        return region switch
+        {
+            "US" => euSize switch
+            {
+                "36" => "5.5",
+                "37" => "6.5",
+                "38" => "7.5",
+                "39" => "8.5",
+                "40" => "9.5",
+                "41" => "10.5",
+                "42" => "11.5",
+                _ => "12.5"
+            },
+            "UK" => euSize switch
+            {
+                "36" => "3.5",
+                "37" => "4.5",
+                "38" => "5.5",
+                "39" => "6.5",
+                "40" => "7.5",
+                "41" => "8.5",
+                "42" => "9.5",
+                _ => "10.5"
+            },
+            _ => euSize
+        };
     }
 
     public interface IStoreProductIterator

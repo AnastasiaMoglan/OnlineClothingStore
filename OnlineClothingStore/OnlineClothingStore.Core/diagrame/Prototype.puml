@@ -1,54 +1,38 @@
 ﻿@startuml
-title Prototype Pattern - Online Clothing Store (LSP Correct)
+title Prototype - Size Guide Templates
 
 skinparam classAttributeIconSize 0
-skinparam linetype ortho
-skinparam shadowing false
 
-package "Domain" {
-  abstract class Product {
-    - Name : string
-    - Price : decimal
-    + GetFinalPrice() : decimal
-  }
-
-  class ClothingProduct {
-    + Size : string
-    + Color : string
-    + Material : string
-    + HasCustomPrint : bool
-    + CustomPrintText : string
-    + PremiumPackaging : bool
-    + Tags : List<string>
-    + GetFinalPrice() : decimal
-    + ToString() : string
-  }
-
-  Product <|-- ClothingProduct
+class SizeGuide {
+    +Category : string
+    +BrandName : string
+    +Region : string
+    +Sizes : List<string>
+    +Measurements : Dictionary<string, string>
+    +Notes : string
 }
 
-package "Prototype" {
-  interface "IPrototype<T>" as IPrototype {
-    + ShallowClone() : T
-    + DeepClone() : T
-  }
-
-  class ClothingProductPrototype {
-    - _product : ClothingProduct
-    + ClothingProductPrototype(product : ClothingProduct)
-    + ShallowClone() : ClothingProduct
-    + DeepClone() : ClothingProduct
-  }
-
-  class ProductTemplateRegistry {
-    - _templates : Dictionary<string, IPrototype<ClothingProduct>>
-    + Register(key : string, prototype : IPrototype<ClothingProduct>) : void
-    + GetShallowClone(key : string) : ClothingProduct
-    + GetDeepClone(key : string) : ClothingProduct
-  }
-
-  IPrototype <|.. ClothingProductPrototype
-  ClothingProductPrototype --> ClothingProduct : clones
-  ProductTemplateRegistry --> IPrototype : depends on
+interface ISizeGuidePrototype {
+    +Clone() : SizeGuide
 }
+
+class SizeGuidePrototype {
+    -_sizeGuide : SizeGuide
+    +Clone() : SizeGuide
+}
+
+class SizeGuideRegistry {
+    -_templates : Dictionary<string, ISizeGuidePrototype>
+    +Register(key : string, prototype : ISizeGuidePrototype) : void
+    +GetClone(key : string) : SizeGuide
+}
+
+ISizeGuidePrototype <|.. SizeGuidePrototype
+
+SizeGuidePrototype --> SizeGuide : stores template
+SizeGuidePrototype ..> SizeGuide : creates deep clone
+
+SizeGuideRegistry --> ISizeGuidePrototype : stores prototypes
+SizeGuideRegistry ..> SizeGuide : returns clone
+
 @enduml
