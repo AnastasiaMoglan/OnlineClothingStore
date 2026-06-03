@@ -1,0 +1,99 @@
+﻿@startuml
+title Abstract Factory - Order Packaging
+
+skinparam classAttributeIconSize 0
+
+interface IOrderPackagingFactory {
+    +CreateBox() : IBox
+    +CreateLabel() : ILabel
+    +CreateInsert() : IInsert
+}
+
+interface IBox {
+    +GetBoxDescription() : string
+}
+
+interface ILabel {
+    +GetLabelDescription() : string
+}
+
+interface IInsert {
+    +GetInsertDescription() : string
+}
+
+class EcoPackagingFactory {
+    +CreateBox() : IBox
+    +CreateLabel() : ILabel
+    +CreateInsert() : IInsert
+}
+
+class LuxuryPackagingFactory {
+    +CreateBox() : IBox
+    +CreateLabel() : ILabel
+    +CreateInsert() : IInsert
+}
+
+class RecycledBox {
+    +GetBoxDescription() : string
+}
+
+class PremiumBox {
+    +GetBoxDescription() : string
+}
+
+class EcoLabel {
+    +GetLabelDescription() : string
+}
+
+class GoldLabel {
+    +GetLabelDescription() : string
+}
+
+class ThankYouCard {
+    +GetInsertDescription() : string
+}
+
+class CareInstructionCard {
+    +GetInsertDescription() : string
+}
+
+class OrderPackagingService {
+    -_packagingFactory : IOrderPackagingFactory
+    +PreparePackaging() : PackagingResult
+}
+
+class PackagingResult {
+    +FactoryName : string
+    +BoxDescription : string
+    +LabelDescription : string
+    +InsertDescription : string
+}
+
+IOrderPackagingFactory <|.. EcoPackagingFactory
+IOrderPackagingFactory <|.. LuxuryPackagingFactory
+
+IBox <|.. RecycledBox
+IBox <|.. PremiumBox
+
+ILabel <|.. EcoLabel
+ILabel <|.. GoldLabel
+
+IInsert <|.. ThankYouCard
+IInsert <|.. CareInstructionCard
+
+EcoPackagingFactory ..> RecycledBox : creates
+EcoPackagingFactory ..> EcoLabel : creates
+EcoPackagingFactory ..> ThankYouCard : creates
+
+LuxuryPackagingFactory ..> PremiumBox : creates
+LuxuryPackagingFactory ..> GoldLabel : creates
+LuxuryPackagingFactory ..> CareInstructionCard : creates
+
+OrderPackagingService --> IOrderPackagingFactory
+OrderPackagingService --> PackagingResult
+
+PackagingResult --> IBox
+PackagingResult --> ILabel
+PackagingResult --> IInsert
+
+@enduml

@@ -9,33 +9,35 @@
     string orderType = ViewBag.OrderType as string ?? "standard";
     string deliveryMethod = ViewBag.DeliveryMethod as string ?? "courier";
     string discountType = ViewBag.DiscountType as string ?? "none";
+    string packagingType = ViewBag.PackagingType as string ?? "standard";
 
     decimal productsTotal = ViewBag.ProductsTotal ?? 0;
     decimal servicePrice = ViewBag.ServicePrice ?? 0;
     decimal deliveryPrice = ViewBag.DeliveryPrice ?? 0;
+    decimal packagingPrice = ViewBag.PackagingPrice ?? 0;
     decimal discountValue = ViewBag.DiscountValue ?? 0;
     decimal totalAfterDiscount = ViewBag.TotalAfterDiscount ?? productsTotal;
-    decimal finalTotal = ViewBag.FinalTotal ?? totalAfterDiscount;
+    decimal finalTotal = ViewBag.FinalTotal ?? totalAfterDiscount + packagingPrice;
 }
 
 <section class="shop-hero">
     <div>
         <span class="hero-kicker">Checkout</span>
-        <h1>Finalizare comandă</h1>
+        <h1>Finalizare comanda</h1>
         <p>
-            Aici verifici hainele alese, apoi selectezi tipul comenzii,
-            metoda de livrare și reducerea aplicată.
+            Verifica produsele, alege livrarea, ambalajul si reducerea. Totalul se actualizeaza
+            cu toate costurile selectate.
         </p>
     </div>
 
-    <a asp-controller="Store" asp-action="Cart" class="btn secondary">Înapoi la coș</a>
+    <a asp-controller="Store" asp-action="Cart" class="btn secondary">Inapoi la cos</a>
 </section>
 
 @if (cart.Count == 0)
 {
     <section class="empty-state">
-        <h2>Coșul este gol</h2>
-        <p>Adaugă produse din catalog înainte de checkout.</p>
+        <h2>Cosul este gol</h2>
+        <p>Adauga produse din catalog inainte de checkout.</p>
         <a asp-controller="Store" asp-action="Catalog" class="btn primary">Mergi la catalog</a>
     </section>
 }
@@ -50,7 +52,7 @@ else
                 <div class="checkout-product-line">
                     <div>
                         <strong>@item.Product.Name</strong>
-                        <span>@item.Product.Category | @item.Product.Color | Mărime @item.Product.Size</span>
+                        <span>@item.Product.Category | @item.Product.Color | Marime @item.Product.Size</span>
                     </div>
 
                     <b>@item.Quantity x @item.Product.Price MDL</b>
@@ -63,11 +65,10 @@ else
         <div class="bridge-layout">
 
             <form asp-controller="Store" asp-action="Checkout" method="post" class="bridge-form">
-                <h2>Detalii livrare și reducere</h2>
+                <h2>Detalii comanda</h2>
 
                 <p class="bridge-small-info">
-                    După ce ai ales hainele, completează datele, selectează procesarea comenzii,
-                    metoda de livrare și strategia de reducere.
+                    Completeaza datele de livrare si alege ambalajul potrivit pentru comanda ta.
                 </p>
 
                 <div class="form-group">
@@ -76,7 +77,7 @@ else
                 </div>
 
                 <div class="form-group">
-                    <label>Adresă / locație livrare</label>
+                    <label>Adresa / locatie livrare</label>
                     <input type="text" name="address" value="@ViewBag.Address" />
                 </div>
 
@@ -87,24 +88,24 @@ else
                         <label class="bridge-radio-item">
                             <input type="radio" name="orderType" value="standard" @(orderType == "standard" ? "checked" : "") />
                             <span>
-                                <strong>Comandă standard</strong>
-                                <small>Fără cost suplimentar</small>
+                                <strong>Comanda standard</strong>
+                                <small>Fara cost suplimentar</small>
                             </span>
                         </label>
 
                         <label class="bridge-radio-item">
                             <input type="radio" name="orderType" value="express" @(orderType == "express" ? "checked" : "") />
                             <span>
-                                <strong>Comandă expres</strong>
-                                <small>Procesare rapidă: +80 MDL</small>
+                                <strong>Comanda expres</strong>
+                                <small>Procesare rapida: +80 MDL</small>
                             </span>
                         </label>
 
                         <label class="bridge-radio-item">
                             <input type="radio" name="orderType" value="gift" @(orderType == "gift" ? "checked" : "") />
                             <span>
-                                <strong>Comandă cadou</strong>
-                                <small>Ambalaj special: +120 MDL</small>
+                                <strong>Comanda cadou</strong>
+                                <small>Pregatire speciala: +120 MDL</small>
                             </span>
                         </label>
                     </div>
@@ -116,7 +117,7 @@ else
                             <input type="radio" name="deliveryMethod" value="courier" @(deliveryMethod == "courier" ? "checked" : "") />
                             <span>
                                 <strong>Curier</strong>
-                                <small>Livrare la adresă: +70 MDL</small>
+                                <small>Livrare la adresa: +70 MDL</small>
                             </span>
                         </label>
 
@@ -124,7 +125,7 @@ else
                             <input type="radio" name="deliveryMethod" value="pickup" @(deliveryMethod == "pickup" ? "checked" : "") />
                             <span>
                                 <strong>Ridicare din magazin</strong>
-                                <small>Fără cost suplimentar</small>
+                                <small>Fara cost suplimentar</small>
                             </span>
                         </label>
 
@@ -138,14 +139,59 @@ else
                     </div>
                 </div>
 
+                <div class="packaging-option-box">
+                    <div class="packaging-heading">
+                        <div>
+                            <h3>Alege ambalajul</h3>
+                            <p>Ambalajul este adaugat separat in totalul comenzii.</p>
+                        </div>
+                    </div>
+
+                    <label class="packaging-radio-item @(packagingType == "standard" ? "active" : "")">
+                        <input type="radio" name="packagingType" value="standard" @(packagingType == "standard" ? "checked" : "") />
+                        <img class="packaging-option-image"
+                             src="https://www.top-packaging.com/uploadfile/201908/12/61cc3bf8fc5f8a029e9d37fc90cb14ed_medium.jpg"
+                             alt="Cutie kraft pentru ambalare standard" />
+                        <span>
+                            <strong>Ambalare standard</strong>
+                            <small>Cutie simpla din carton kraft, eticheta standard si sumarul comenzii.</small>
+                        </span>
+                        <b>Gratuit</b>
+                    </label>
+
+                    <label class="packaging-radio-item @(packagingType == "eco" ? "active" : "")">
+                        <input type="radio" name="packagingType" value="eco" @(packagingType == "eco" ? "checked" : "") />
+                        <img class="packaging-option-image"
+                             src="https://forestpackage.com/wp-content/uploads/2023/02/apparel-box.jpg"
+                             alt="Ambalaj eco pentru haine" />
+                        <span>
+                            <strong>Eco Smart Pack</strong>
+                            <small>Cutie reciclata, eticheta eco si card de multumire.</small>
+                        </span>
+                        <b>+45 MDL</b>
+                    </label>
+
+                    <label class="packaging-radio-item luxury @(packagingType == "luxury" ? "active" : "")">
+                        <input type="radio" name="packagingType" value="luxury" @(packagingType == "luxury" ? "checked" : "") />
+                        <img class="packaging-option-image"
+                             src="https://image.made-in-china.com/2f0j00zLqoaWkGvUcb/Custom-Logo-Printed-Purple-Premium-Schmuck-Box-Jewelry-Packaging-Pouch-and-Boxes-Slide-Drawer-Jewelry-Box-Packaging.jpg"
+                             alt="Ambalaj luxury premium" />
+                        <span>
+                            <strong>Luxury Gift Wrap</strong>
+                            <small>Cutie premium, eticheta aurie si card cu instructiuni de ingrijire.</small>
+                        </span>
+                        <b>+120 MDL</b>
+                    </label>
+                </div>
+
                 <div class="strategy-option-box">
                     <h3>Alege reducerea</h3>
 
                     <label class="strategy-radio-item">
                         <input type="radio" name="discountType" value="none" @(discountType == "none" ? "checked" : "") />
                         <span>
-                            <strong>Fără reducere</strong>
-                            <small>Comanda se calculează fără reducere.</small>
+                            <strong>Fara reducere</strong>
+                            <small>Comanda se calculeaza fara reducere.</small>
                         </span>
                     </label>
 
@@ -153,7 +199,7 @@ else
                         <input type="radio" name="discountType" value="newCustomer" @(discountType == "newCustomer" ? "checked" : "") />
                         <span>
                             <strong>Client nou</strong>
-                            <small>Reducere de 5% pentru prima comandă.</small>
+                            <small>Reducere de 5% pentru prima comanda.</small>
                         </span>
                     </label>
 
@@ -161,7 +207,7 @@ else
                         <input type="radio" name="discountType" value="student" @(discountType == "student" ? "checked" : "") />
                         <span>
                             <strong>Student</strong>
-                            <small>Reducere de 10% pentru studenți.</small>
+                            <small>Reducere de 10% pentru studenti.</small>
                         </span>
                     </label>
 
@@ -169,18 +215,18 @@ else
                         <input type="radio" name="discountType" value="vip" @(discountType == "vip" ? "checked" : "") />
                         <span>
                             <strong>VIP</strong>
-                            <small>Reducere de 15% pentru clienții VIP.</small>
+                            <small>Reducere de 15% pentru clientii VIP.</small>
                         </span>
                     </label>
                 </div>
 
                 <button type="submit" class="bridge-btn">
-                    Calculează și confirmă comanda
+                    Calculeaza si confirma comanda
                 </button>
             </form>
 
             <div class="bridge-result">
-                <h2>Rezumat comandă</h2>
+                <h2>Rezumat comanda</h2>
 
                 <div class="bridge-summary">
                     <div>
@@ -189,12 +235,12 @@ else
                     </div>
 
                     <div>
-                        <span>Reducere aplicată</span>
+                        <span>Reducere aplicata</span>
                         <strong>-@discountValue MDL</strong>
                     </div>
 
                     <div>
-                        <span>Total după reducere</span>
+                        <span>Total dupa reducere</span>
                         <strong>@totalAfterDiscount MDL</strong>
                     </div>
 
@@ -208,17 +254,50 @@ else
                         <strong>@deliveryPrice MDL</strong>
                     </div>
 
+                    <div>
+                        <span>Ambalaj</span>
+                        <strong>@packagingPrice MDL</strong>
+                    </div>
+
                     <div class="bridge-total">
                         <span>Total final</span>
                         <strong>@finalTotal MDL</strong>
                     </div>
                 </div>
 
+                <div class="packaging-result-box">
+                    <img class="packaging-result-image"
+                         src="@ViewBag.PackagingImageUrl"
+                         alt="Ambalaj selectat" />
+
+                    <div class="packaging-result-header">
+                        <span>Ambalaj ales</span>
+                        <strong>@ViewBag.PackagingName</strong>
+                    </div>
+
+                    <div class="packaging-details-grid">
+                        <div>
+                            <span>Cutie</span>
+                            <p>@ViewBag.PackagingBoxDescription</p>
+                        </div>
+
+                        <div>
+                            <span>Eticheta</span>
+                            <p>@ViewBag.PackagingLabelDescription</p>
+                        </div>
+
+                        <div>
+                            <span>Insert</span>
+                            <p>@ViewBag.PackagingInsertDescription</p>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="strategy-result-box">
-                    <h3>Strategie de reducere</h3>
+                    <h3>Reducere</h3>
 
                     <div class="checkout-summary-row">
-                        <span>Strategie selectată</span>
+                        <span>Optiune selectata</span>
                         <strong>@ViewBag.DiscountName</strong>
                     </div>
 
@@ -231,31 +310,26 @@ else
                         <span>Valoare reducere</span>
                         <strong>-@discountValue MDL</strong>
                     </div>
-
-                    <div class="checkout-summary-row">
-                        <span>Total după reducere</span>
-                        <strong>@totalAfterDiscount MDL</strong>
-                    </div>
                 </div>
 
                 @if (wasCalculated)
                 {
                     <div class="success-box">
-                        Comanda a fost configurată cu succes.
+                        Comanda a fost configurata cu succes.
                     </div>
 
                     <div class="bridge-message-box">
-                        <h3>Tip comandă</h3>
+                        <h3>Tip comanda</h3>
                         <p>@ViewBag.OrderTypeName</p>
                     </div>
 
                     <div class="bridge-message-box">
-                        <h3>Metodă livrare</h3>
+                        <h3>Metoda livrare</h3>
                         <p>@ViewBag.DeliveryMethodName</p>
                     </div>
 
                     <div class="bridge-message-box">
-                        <h3>Pregătire comandă</h3>
+                        <h3>Pregatire comanda</h3>
                         <p>@ViewBag.PreparationResult</p>
                     </div>
 
@@ -267,8 +341,7 @@ else
                 else
                 {
                     <p class="empty-result">
-                        Selectează tipul comenzii, metoda de livrare și reducerea,
-                        apoi apasă pe buton pentru totalul final.
+                        Alege optiunile pentru livrare, ambalaj si reducere, apoi apasa pe buton pentru totalul final.
                     </p>
                 }
             </div>

@@ -13,6 +13,7 @@ using OnlineClothingStore.App.Structural.Observer;
 using OnlineClothingStore.App.Structural.Strategy;
 using OnlineClothingStore.Web.Data;
 using OnlineClothingStore.Web.Models;
+using OnlineClothingStore.Creational.AbstractFactory;
 using OnlineClothingStore.Creational.FactoryMethod;
 
 namespace OnlineClothingStore.Web.Controllers;
@@ -381,6 +382,7 @@ public class StoreController : Controller
 
         decimal discountValue = discountCalculator.CalculateDiscount(productsTotal);
         decimal totalAfterDiscount = discountCalculator.CalculateTotalAfterDiscount(productsTotal);
+        PackagingCheckoutOption packaging = CreatePackagingCheckoutOption("standard");
 
         ViewBag.Cart = cart;
         ViewBag.Total = productsTotal;
@@ -401,13 +403,16 @@ public class StoreController : Controller
             productsTotal: productsTotal,
             servicePrice: 0,
             deliveryPrice: 0,
-            finalTotal: totalAfterDiscount,
+            packagingPrice: packaging.Price,
+            finalTotal: totalAfterDiscount + packaging.Price,
             orderTypeName: "",
             deliveryMethodName: "",
             preparationResult: "",
             deliveryResult: "",
             wasCalculated: false
         );
+
+        ConfigurePackagingViewData(packaging);
 
         AddLayoutCounters();
 
@@ -420,7 +425,8 @@ public class StoreController : Controller
         string address,
         string orderType,
         string deliveryMethod,
-        string discountType)
+        string discountType,
+        string packagingType)
     {
         customerName = string.IsNullOrWhiteSpace(customerName)
             ? "Client BlueWear"
@@ -442,6 +448,10 @@ public class StoreController : Controller
             ? "none"
             : discountType;
 
+        packagingType = string.IsNullOrWhiteSpace(packagingType)
+            ? "standard"
+            : packagingType;
+
         List<CartLine> cart = GetCartLines();
         decimal productsTotal = cart.Sum(c => c.Product.Price * c.Quantity);
 
@@ -459,7 +469,8 @@ public class StoreController : Controller
 
         decimal servicePrice = deliveryOrder.ServicePrice;
         decimal deliveryPrice = deliveryOrder.GetDeliveryPrice();
-        decimal finalTotal = totalAfterDiscount + servicePrice + deliveryPrice;
+        PackagingCheckoutOption packaging = CreatePackagingCheckoutOption(packagingType);
+        decimal finalTotal = totalAfterDiscount + servicePrice + deliveryPrice + packaging.Price;
 
         ViewBag.Cart = cart;
         ViewBag.Total = productsTotal;
@@ -480,6 +491,7 @@ public class StoreController : Controller
             productsTotal: productsTotal,
             servicePrice: servicePrice,
             deliveryPrice: deliveryPrice,
+            packagingPrice: packaging.Price,
             finalTotal: finalTotal,
             orderTypeName: deliveryOrder.OrderType,
             deliveryMethodName: deliveryOrder.GetDeliveryMethodName(),
@@ -488,10 +500,79 @@ public class StoreController : Controller
             wasCalculated: true
         );
 
+        ConfigurePackagingViewData(packaging);
+
         AddLayoutCounters();
 
         return View();
     }
+
+    private static PackagingCheckoutOption CreatePackagingCheckoutOption(string packagingType)
+    {
+        packagingType = string.IsNullOrWhiteSpace(packagingType)
+            ? "standard"
+            : packagingType;
+
+        IOrderPackagingFactory factory = packagingType switch
+        {
+            "eco" => new EcoPackagingFactory(),
+            "luxury" => new LuxuryPackagingFactory(),
+            _ => new StandardPackagingFactory()
+        };
+
+        OrderPackagingService packagingService = new(factory);
+        PackagingResult result = packagingService.PreparePackaging();
+
+        return new PackagingCheckoutOption(
+            Type: packagingType switch
+            {
+                "eco" => "eco",
+                "luxury" => "luxury",
+                _ => "standard"
+            },
+            Name: packagingType switch
+            {
+                "eco" => "Eco Smart Pack",
+                "luxury" => "Luxury Gift Wrap",
+                _ => "Ambalare standard"
+            },
+            Price: packagingType switch
+            {
+                "eco" => 45m,
+                "luxury" => 120m,
+                _ => 0m
+            },
+            ImageUrl: packagingType switch
+            {
+                "eco" => "https://forestpackage.com/wp-content/uploads/2023/02/apparel-box.jpg",
+                "luxury" => "https://image.made-in-china.com/2f0j00zLqoaWkGvUcb/Custom-Logo-Printed-Purple-Premium-Schmuck-Box-Jewelry-Packaging-Pouch-and-Boxes-Slide-Drawer-Jewelry-Box-Packaging.jpg",
+                _ => "https://www.top-packaging.com/uploadfile/201908/12/61cc3bf8fc5f8a029e9d37fc90cb14ed_medium.jpg"
+            },
+            BoxDescription: result.BoxDescription,
+            LabelDescription: result.LabelDescription,
+            InsertDescription: result.InsertDescription
+        );
+    }
+
+    private void ConfigurePackagingViewData(PackagingCheckoutOption packaging)
+    {
+        ViewBag.PackagingType = packaging.Type;
+        ViewBag.PackagingName = packaging.Name;
+        ViewBag.PackagingPrice = packaging.Price;
+        ViewBag.PackagingImageUrl = packaging.ImageUrl;
+        ViewBag.PackagingBoxDescription = packaging.BoxDescription;
+        ViewBag.PackagingLabelDescription = packaging.LabelDescription;
+        ViewBag.PackagingInsertDescription = packaging.InsertDescription;
+    }
+
+    private sealed record PackagingCheckoutOption(
+        string Type,
+        string Name,
+        decimal Price,
+        string ImageUrl,
+        string BoxDescription,
+        string LabelDescription,
+        string InsertDescription);
 
     // ============================================================
     // FACTORY METHOD PATTERN
@@ -812,7 +893,8 @@ public class StoreController : Controller
         string customerName,
         string address,
         string orderType,
-        string deliveryMethod)
+        string deliveryMethod,
+        string packagingType)
     {
         customerName = string.IsNullOrWhiteSpace(customerName)
             ? "Client BlueWear"
@@ -829,6 +911,10 @@ public class StoreController : Controller
         deliveryMethod = string.IsNullOrWhiteSpace(deliveryMethod)
             ? "courier"
             : deliveryMethod;
+
+        packagingType = string.IsNullOrWhiteSpace(packagingType)
+            ? "standard"
+            : packagingType;
 
         List<CartLine> cart = GetCartLines();
         decimal productsTotal = cart.Sum(c => c.Product.Price * c.Quantity);
@@ -847,7 +933,8 @@ public class StoreController : Controller
 
         decimal servicePrice = deliveryOrder.ServicePrice;
         decimal deliveryPrice = deliveryOrder.GetDeliveryPrice();
-        decimal finalTotal = totalAfterDiscount + servicePrice + deliveryPrice;
+        PackagingCheckoutOption packaging = CreatePackagingCheckoutOption(packagingType);
+        decimal finalTotal = totalAfterDiscount + servicePrice + deliveryPrice + packaging.Price;
 
         ConfigureStrategyViewData(
             discountType: "none",
@@ -865,6 +952,7 @@ public class StoreController : Controller
             productsTotal: productsTotal,
             servicePrice: servicePrice,
             deliveryPrice: deliveryPrice,
+            packagingPrice: packaging.Price,
             finalTotal: finalTotal,
             orderTypeName: deliveryOrder.OrderType,
             deliveryMethodName: deliveryOrder.GetDeliveryMethodName(),
@@ -872,6 +960,8 @@ public class StoreController : Controller
             deliveryResult: deliveryResult,
             wasCalculated: true
         );
+
+        ConfigurePackagingViewData(packaging);
 
         AddLayoutCounters();
 
@@ -906,6 +996,7 @@ public class StoreController : Controller
         decimal productsTotal,
         decimal servicePrice,
         decimal deliveryPrice,
+        decimal packagingPrice,
         decimal finalTotal,
         string orderTypeName,
         string deliveryMethodName,
@@ -922,6 +1013,7 @@ public class StoreController : Controller
         ViewBag.ProductsTotal = productsTotal;
         ViewBag.ServicePrice = servicePrice;
         ViewBag.DeliveryPrice = deliveryPrice;
+        ViewBag.PackagingPrice = packagingPrice;
         ViewBag.FinalTotal = finalTotal;
 
         ViewBag.OrderTypeName = orderTypeName;
